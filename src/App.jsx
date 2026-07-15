@@ -23,6 +23,7 @@ import Burst from "./page/Burst";
 import AIGenerator from "./page/AIGenerator";
 import aftertraining from "./page/Aftertraining";
 import DetectionCapture from "./page/DetectionCapture";
+import selectedProject from "./page/SelectedProject";
 
 function App() {
   return (
@@ -116,6 +117,8 @@ function App() {
 />
 
 <Route path="/detection-capture" element={<DetectionCapture />} />
+
+<Route path="/selected-project" element={<selectedProject />} />
 
 </Routes>
     </BrowserRouter>
