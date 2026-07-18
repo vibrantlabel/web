@@ -68,9 +68,31 @@ const previewRef = useRef(null);
     setCameraSource] =
     useState("browser");
 
-  const [esp32Ip,
-    setEsp32Ip] =
-    useState("192.168.43.181");
+  // ==========================
+  // ESP32 IP: แยก "ค่าที่กำลังพิมพ์" กับ "ค่าที่ยืนยันแล้วให้ใช้จริง"
+  // เพื่อไม่ให้ยิง request ไปทุกครั้งที่พิมพ์ตัวอักษร
+  // ==========================
+
+ const [esp32IpInput,
+  setEsp32IpInput] =
+  useState(
+    localStorage.getItem("camera_url") || "192.168.43.181/stream"
+  );
+
+const [esp32StreamKey,
+  setEsp32StreamKey] =
+  useState(0);
+
+  // ค่า IP ที่ยืนยันแล้วจริง ใช้สร้าง URL stream เท่านั้น
+  // เป็น null จนกว่าจะกด "เชื่อมต่อ" ครั้งแรก
+  const [esp32IpConnected,
+    setEsp32IpConnected] =
+    useState(null);
+
+  // สถานะการเชื่อมต่อ: "idle" | "connecting" | "connected" | "error"
+  const [esp32Status,
+    setEsp32Status] =
+    useState("idle");
 
   // ==========================
   // ESP32 Preview
@@ -162,8 +184,36 @@ const previewRef = useRef(null);
   ]);
 
   // ==========================
-  // ESP32 Preview
+  // ESP32: กดปุ่ม "เชื่อมต่อ" เพื่อยืนยัน IP แล้วเริ่ม stream จริง
+  // ไม่ยิง request อัตโนมัติระหว่างพิมพ์
   // ==========================
+
+  function handleConnectEsp32() {
+
+  const normalized = normalizeCameraUrl(esp32IpInput);
+
+  if (!normalized) {
+    setEsp32Status("error");
+    return;
+  }
+
+  localStorage.setItem("camera_url", esp32IpInput.trim());
+
+  setEsp32Status("connecting");
+  setEsp32IpConnected(normalized);
+  // เปลี่ยน key ตอนกดเชื่อมต่อเท่านั้น ไม่ใช่ทุก render (กัน stream โหลดซ้ำไม่รู้จบ)
+  setEsp32StreamKey(Date.now());
+}
+  // เติม http:// ให้อัตโนมัติถ้าผู้ใช้ไม่ได้พิมพ์มา ไม่บังคับต่อ /stream อีกต่อไป
+// เพื่อรองรับกล้อง IP ยี่ห้ออื่นที่ path ไม่เหมือน ESP32-CAM
+function normalizeCameraUrl(raw) {
+  let url = raw.trim();
+  if (!url) return "";
+  if (!/^https?:\/\//i.test(url)) {
+    url = `http://${url}`;
+  }
+  return url;
+}
 
   // ==========================
   // Capture
@@ -570,11 +620,13 @@ checked={
 cameraSource==="esp32"
 }
 
-onChange={()=>
-setCameraSource(
-"esp32"
-)
-}
+onChange={()=>{
+  setCameraSource("esp32");
+  // reset สถานะการเชื่อมต่อทุกครั้งที่กลับมาเลือก ESP32 ใหม่
+  // ป้องกันการใช้ stream ค้างจากรอบก่อน
+  setEsp32Status("idle");
+  setEsp32IpConnected(null);
+}}
 
 />
 
@@ -592,33 +644,83 @@ marginTop:15
 }}
 >
 
-<input
+  <div style={{display:"flex", gap:10}}>
 
-value={esp32Ip}
+    <input
 
-onChange={e=>
-setEsp32Ip(
-e.target.value
-)
-}
+    value={esp32IpInput}
 
-placeholder="192.168.43.181"
+    onChange={e=>{
+      setEsp32IpInput(e.target.value);
+      // แก้ IP ระหว่างที่เคยเชื่อมต่ออยู่ -> ต้องกดเชื่อมต่อใหม่ก่อนถึงจะใช้ได้
+      setEsp32Status("idle");
+    }}
 
-style={{
+    onKeyDown={e=>{
+      if (e.key === "Enter") handleConnectEsp32();
+    }}
 
-width:"100%",
+   placeholder="192.168.43.181/stream (ESP32-CAM) หรือ 192.168.1.50 (กล้อง IP ทั่วไป)"
 
-padding:12,
+    style={{
 
-fontSize:16,
+    flex:1,
 
-borderRadius:8,
+    padding:12,
 
-border:"1px solid #ccc"
+    fontSize:16,
 
-}}
+    borderRadius:8,
 
-/>
+    border:"1px solid #ccc"
+
+    }}
+
+    />
+
+    <button
+
+      onClick={handleConnectEsp32}
+
+      style={{
+        padding:"12px 24px",
+        fontSize:15,
+        fontWeight:"bold",
+        borderRadius:8,
+        border:"none",
+        cursor:"pointer",
+        background:
+          esp32Status === "connected" ? "#28a745" : "#0078D7",
+        color:"#fff",
+        whiteSpace:"nowrap"
+      }}
+
+    >
+
+      {esp32Status === "connected" ? "✅ เชื่อมต่อแล้ว" : "🔌 เชื่อมต่อ"}
+
+    </button>
+
+  </div>
+
+  {/* แสดงสถานะการเชื่อมต่อให้ผู้ใช้เห็นชัดเจน */}
+  {esp32Status === "connecting" && (
+    <p style={{color:"#d98a16", marginTop:8, fontSize:13}}>
+      ⏳ กำลังเชื่อมต่อ...
+    </p>
+  )}
+
+  {esp32Status === "error" && (
+    <p style={{color:"red", marginTop:8, fontSize:13}}>
+      ❌ ไม่สามารถเชื่อมต่อได้ กรุณาตรวจสอบ IP และเครือข่าย
+    </p>
+  )}
+
+  {esp32Status === "connected" && (
+    <p style={{color:"#1e7e4d", marginTop:8, fontSize:13}}>
+      ✅ เชื่อมต่อกับ {esp32IpInput.trim()} สำเร็จ
+    </p>
+  )}
 
 </div>
 
@@ -674,14 +776,16 @@ display:"block"
 />
 
 :
- 
+
+esp32IpConnected
+
+?
 
  <img
     ref={previewRef}
    crossOrigin="anonymous"
-    src={`http://${esp32Ip}/stream`}
-
-    alt="ESP32 Stream"
+       src={`${esp32IpConnected}${esp32IpConnected.includes("?") ? "&" : "?"}t=${esp32StreamKey}`}
+  alt="Camera Stream"
 
     style={{
         width: "100%",
@@ -690,10 +794,31 @@ display:"block"
         display: "block"
     }}
 
+    onLoad={() => {
+        setEsp32Status("connected");
+    }}
+
     onError={() => {
         console.log("ESP32 Stream Error");
+        setEsp32Status("error");
     }}
 />
+
+:
+
+<div style={{
+  width:"100%",
+  height:420,
+  display:"flex",
+  alignItems:"center",
+  justifyContent:"center",
+  color:"#888",
+  fontSize:15,
+  textAlign:"center",
+  padding:20
+}}>
+  กรุณากรอก IP แล้วกด "เชื่อมต่อ" ก่อนเริ่มใช้งานกล้อง
+</div>
 
 }
 

@@ -1,20 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
- 
-    const SERVER_URL =
-        localStorage.getItem("cloud_url");
+const SERVER_URL = localStorage.getItem("cloud_url");
 
 export default function CreateProject() {
   const navigate = useNavigate();
 
-  // 🌟 State คุมโหมด: "classification", "detection", "segmentation"
-  const [projectType, setProjectType] = useState("classification");
-  const [projectName, setProjectName] = useState(localStorage.getItem("project_name") || "");
-  const [className, setClassName] = useState("");
-  const [width, setWidth] = useState(localStorage.getItem("resize_width") || "224");
-  const [height, setHeight] = useState(localStorage.getItem("resize_height") || "224");
+  const [projectName, setProjectName] = useState(
+    localStorage.getItem("project_name") || ""
+  );
   const [result, setResult] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const inputStyle = {
     width: "100%",
@@ -35,74 +31,37 @@ export default function CreateProject() {
     cursor: "pointer"
   };
 
-  const tabButtonStyle = (isActive) => ({
-    flex: 1,
-    padding: "10px",
-    fontSize: "15px",
-    fontWeight: "bold",
-    border: isActive ? "2px solid #0078D7" : "1px solid #ccc",
-    background: isActive ? "#F0F7FF" : "#fff",
-    color: isActive ? "#0078D7" : "#555",
-    borderRadius: "8px",
-    cursor: "pointer",
-    textAlign: "center",
-    transition: "all 0.2s ease"
-  });
-
   const createProject = async () => {
     if (!projectName.trim()) {
       setResult("Please enter Project Name");
       return;
     }
 
-    // ตรวจสอบความถูกต้องฟิลด์ย่อยเฉพาะโหมด Classification เท่านั้น
-    if (projectType === "classification") {
-      if (!className.trim()) {
-        setResult("Please enter Class Name");
-        return;
-      }
-      if (!width || parseInt(width) <= 0) {
-        setResult("Invalid Width");
-        return;
-      }
-      if (!height || parseInt(height) <= 0) {
-        setResult("Invalid Height");
-        return;
-      }
-    }
-
     try {
+      setIsSubmitting(true);
       setResult("Creating project...");
 
-      // เตรียมฐานข้อมูล Payload หลักส่งเข้า API หลังบ้าน
+      // V2: payload เหลือแค่ email กับชื่อ project
+      // (annotation type เลือกได้ทีหลังต่อรูป/ต่อวัตถุในหน้า labeling เอง
+      //  ไม่ต้องกำหนดตายตัวตอนสร้าง project แล้ว)
       const payload = {
         email: localStorage.getItem("email"),
-        project: projectName.trim(),
-        projectType: projectType // ส่ง "classification", "detection" หรือ "segmentation"
+        project: projectName.trim()
       };
 
-      // แนบข้อมูลเพิ่มเติมเฉพาะเมื่อใช้งานประเภท Classification
-      if (projectType === "classification") {
-        payload.className = className.trim();
-        payload.resize_width = parseInt(width);
-        payload.resize_height = parseInt(height);
-      }
-
-      const response = await fetch(`${SERVER_URL}/create_project`, {
+      const response = await fetch(`${SERVER_URL}/create_project_v2`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
       console.log(data);
 
       if (response.ok && (data.success === true || data.status === "success")) {
-        // ลงทะเบียนชื่อโปรเจกต์และสถานะลงเครื่องจำลองชั่วคราว
         localStorage.setItem("project_name", projectName.trim());
-        localStorage.setItem("project_type", projectType);
         navigate("/");
       } else {
         setResult(data.message || data.error || "Create failed");
@@ -110,6 +69,8 @@ export default function CreateProject() {
     } catch (err) {
       console.error(err);
       setResult(err.message || "Network Error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -124,19 +85,6 @@ export default function CreateProject() {
       </button>
 
       <h2>📁 Create Project</h2>
-
-      {/* แท็บสลับกลุ่มการทำงานตาม Diagram */}
-      <div style={{ display: "flex", gap: "10px", marginTop: "20px", marginBottom: "10px" }}>
-        <button type="button" style={tabButtonStyle(projectType === "classification")} onClick={() => setProjectType("classification")}>
-          🖼️ Classification
-        </button>
-        <button type="button" style={tabButtonStyle(projectType === "detection")} onClick={() => setProjectType("detection")}>
-          🎯 Detection
-        </button>
-        <button type="button" style={tabButtonStyle(projectType === "segmentation")} onClick={() => setProjectType("segmentation")}>
-          ⬡ Segment
-        </button>
-      </div>
 
       <div
         style={{
@@ -154,51 +102,32 @@ export default function CreateProject() {
           onChange={(e) => setProjectName(e.target.value)}
           placeholder="Enter project name"
         />
-
-        {/* จัดการซ่อนฟิลด์เหล่านี้อัตโนมัติหากเป็นโหมด Detection หรือ Segment */}
-        {projectType === "classification" && (
-          <>
-            <label>Class Name:</label>
-            <input
-              style={inputStyle}
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              placeholder="Enter class name"
-            />
-
-            <label>Pixel Size:</label>
-            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-              <span>W:</span>
-              <input
-                type="number"
-                value={width}
-                onChange={(e) => setWidth(e.target.value)}
-                style={{ ...inputStyle, width: "90px" }}
-              />
-              <span>x</span>
-              <span>H:</span>
-              <input
-                type="number"
-                value={height}
-                onChange={(e) => setHeight(e.target.value)}
-                style={{ ...inputStyle, width: "90px" }}
-              />
-            </div>
-          </>
-        )}
       </div>
 
       <button
         onClick={createProject}
-        style={{ ...buttonStyle, marginTop: "25px", width: "100%", height: "50px" }}
+        disabled={isSubmitting}
+        style={{
+          ...buttonStyle,
+          marginTop: "25px",
+          width: "100%",
+          height: "50px",
+          opacity: isSubmitting ? 0.7 : 1,
+          cursor: isSubmitting ? "not-allowed" : "pointer"
+        }}
       >
-        Create Project
+        {isSubmitting ? "Creating..." : "Create Project"}
       </button>
 
       <div
         style={{
           marginTop: "15px",
-          color: result.includes("failed") || result.includes("Invalid") || result.includes("Please") ? "red" : "green"
+          color:
+            result.includes("failed") ||
+            result.includes("Invalid") ||
+            result.includes("Please")
+              ? "red"
+              : "green"
         }}
       >
         {result}

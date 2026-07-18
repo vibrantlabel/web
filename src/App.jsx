@@ -23,8 +23,9 @@ import Burst from "./page/Burst";
 import AIGenerator from "./page/AIGenerator";
 import aftertraining from "./page/Aftertraining";
 import DetectionCapture from "./page/DetectionCapture";
-import selectedProject from "./page/SelectedProject";
-
+ 
+import SelectTraining from "./page/SelectTraining";
+import DetSegTrain from "./page/Train_export";
 function App() {
   return (
     <BrowserRouter>
@@ -118,7 +119,9 @@ function App() {
 
 <Route path="/detection-capture" element={<DetectionCapture />} />
 
-<Route path="/selected-project" element={<selectedProject />} />
+<Route path="/select-training" element={<SelectTraining />} />
+
+<Route path="/det-seg-train" element={<Train_export />} />
 
 </Routes>
     </BrowserRouter>

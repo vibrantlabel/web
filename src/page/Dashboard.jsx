@@ -40,7 +40,7 @@ function Dashboard() {
   //--------------------------------------------------
   // Fetch พร้อม timeout (กัน worker ค้าง ไม่ตอบกลับ)
   //--------------------------------------------------
-  const fetchWithTimeout = async (url, options = {}, timeoutMs = 8000) => {
+  const fetchWithTimeout = async (url, options = {}, timeoutMs = 15000) => {
 
     const controller = new AbortController();
 
