@@ -1,41 +1,10 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Pricing() {
+export default function EnPricing() {
   const navigate = useNavigate();
-  const [exchangeRate, setExchangeRate] = useState(null); // เก็บอัตราแลกเปลี่ยน USD to THB
 
-  // 🌍 ดึงค่าเงิน USD -> THB จาก Frankfurter API เมื่อ Component โหลด
-  useEffect(() => {
-    fetch("https://api.frankfurter.dev/v1/latest?base=USD&symbols=THB")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.rates && data.rates.THB) {
-          setExchangeRate(data.rates.THB);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to fetch exchange rate:", err);
-      });
-  }, []);
-
-  // 🧮 ฟังก์ชันแปลงราคา USD เป็น THB (ถ้าดึง API ได้จะคูณเรทจริง ถ้าไม่ได้จะใช้เรทสำรอง เช่น 35 บาท)
-  const formatPrice = (usdPriceString, planName) => {
-    if (planName === "Free" || planName === "Enterprise") {
-      return usdPriceString; // ถ้าเป็น Free หรือ Custom แสดงข้อความเดิม
-    }
-
-    // ดึงตัวเลขราคาออกมา เช่น "$29 / Month" -> สกัดเอาเฉพาะเลข 29
-    const match = usdPriceString.match(/\d+/);
-    if (!match) return usdPriceString;
-
-    const usdValue = parseInt(match[0], 10);
-    const rate = exchangeRate || 35; // ใช้เรทจาก API หรือสำรองไว้ที่ 35 ถ้ายังโหลดไม่เสร็จ
-    const thbValue = Math.round(usdValue * rate);
-
-    // จัดรูปแบบแสดงผลทั้ง USD และ บาท (THB)
-    return `$${usdValue} (${thbValue.toLocaleString()} บาท) / Month`;
-  };
+  // Prices are shown in USD only — no THB conversion.
+  const formatPrice = (usdPriceString) => usdPriceString;
 
   const plans = [
     {
@@ -45,7 +14,7 @@ export default function Pricing() {
       storage: "1 GB",
       projects: "1",
       images: "1,000 Images (Total)",
-      training: "1 ครั้ง/เดือน (Trial)",
+      training: "1 time/month (Trial)",
       export: "ONNX, TFLite, TF.js, YOLO/PyTorch (.pt)",
       support: "Community",
       description:
@@ -64,7 +33,7 @@ export default function Pricing() {
       storage: "50 GB",
       projects: "Unlimited",
       images: "50,000 Images / Month",
-      training: "10 ครั้ง/เดือน (เกินคิด $1.99/ครั้ง)",
+      training: "10 times/month (overage $1.99/time)",
       export: "ONNX, TFLite, TF.js, YOLO/PyTorch (.pt)",
       support: "Email Support",
       description:
@@ -84,7 +53,7 @@ export default function Pricing() {
       storage: "200 GB",
       projects: "Unlimited",
       images: "500,000 Images / Month",
-      training: "30 ครั้ง/เดือน (เกินคิด $1.79/ครั้ง)",
+      training: "30 times/month (overage $1.79/time)",
       export: "ONNX, TFLite, TF.js, YOLO/PyTorch (.pt)",
       support: "Priority Email",
       description:
@@ -103,7 +72,7 @@ export default function Pricing() {
       storage: "1 TB (1,000 GB)",
       projects: "Unlimited",
       images: "2,000,000 Images / Month",
-      training: "80 ครั้ง/เดือน (เกินคิด $1.49/ครั้ง)",
+      training: "80 times/month (overage $1.49/time)",
       export: "ONNX, TFLite, TF.js, YOLO/PyTorch (.pt) + REST API Export",
       support: "Priority Support + Onboarding",
       description:
@@ -159,22 +128,10 @@ export default function Pricing() {
         style={{
           textAlign: "center",
           color: "#666",
-          marginBottom: 10
-        }}
-      >
-        Choose the plan that fits your AI Dataset workflow.
-      </p>
-
-      {/* แสดงสถานะเรทแลกเปลี่ยนปัจจุบัน */}
-      <p
-        style={{
-          textAlign: "center",
-          color: "#0078D7",
-          fontSize: 13,
           marginBottom: 35
         }}
       >
-        {exchangeRate ? `💱 Live Exchange Rate: 1 USD $\\approx$ ${exchangeRate.toFixed(2)} บาท` : "⏳ Loading exchange rate..."}
+        Choose the plan that fits your AI Dataset workflow.
       </p>
 
       {/* Horizontal Cards */}
@@ -225,10 +182,10 @@ export default function Pricing() {
               style={{
                 marginTop: 0,
                 marginBottom: 15,
-                fontSize: 24 // ปรับขนาดฟอนต์นิดหน่อยเพื่อให้แสดงผลราคาบาทได้พอดี
+                fontSize: 24
               }}
             >
-              {formatPrice(p.price, p.name)}
+              {formatPrice(p.price)}
             </h1>
 
             <hr />
@@ -276,7 +233,7 @@ export default function Pricing() {
                     "selected_price",
                     p.price
                   );
-                  navigate("/checkout");
+                  navigate("/encheckout");
                 }
               }}
               style={{

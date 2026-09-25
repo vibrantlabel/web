@@ -23,6 +23,14 @@ function Dashboard() {
   const [email, setEmail] = useState("");
 
   // ---------------------------------------------
+  // Language ปัจจุบัน (เก็บใน localStorage เพื่อใช้อ้างอิงในหน้าอื่นๆ)
+  // ค่า default = "English"
+  // ---------------------------------------------
+  const [language, setLanguage] = useState(
+    () => localStorage.getItem("language") || "English"
+  );
+
+  // ---------------------------------------------
   // Plan ปัจจุบัน (ดึงจริงจาก Firestore: user/{email}/plan/select
   // ผ่าน backend endpoint /get_user_plan)
   // ---------------------------------------------
@@ -96,7 +104,18 @@ function Dashboard() {
       cloudUrl: hubData.cloud_url
     };
   };
+  
 
+    //--------------------------------------------------
+  // Helper: แปลงจำนวนไบต์ -> ข้อความอ่านง่าย (KB/MB/GB)
+  // ใช้แสดงพื้นที่จัดเก็บที่ใช้ไป เทียบกับโควต้าของแผน
+  //--------------------------------------------------
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes <= 0) return "0 MB";
+    const mb = bytes / (1024 * 1024);
+    if (mb >= 1024) return `${(mb / 1024).toFixed(2)} GB`;
+    return `${mb.toFixed(1)} MB`;
+  };
   //--------------------------------------------------
   // หน่วงเวลาเล็กน้อยก่อน retry
   //--------------------------------------------------
@@ -224,7 +243,7 @@ function Dashboard() {
         setIsConnected(true);
 
         // โหลด Recent Projects เมื่อเชื่อมต่อสำเร็จ
-        //loadRecentProjects(currentCloudUrl, currentEmail);
+        loadRecentProjects(currentCloudUrl, currentEmail);
 
         // โหลด Plan จริงจาก Firestore (user/{email}/plan/select)
         loadUserPlan(currentCloudUrl, currentEmail);
@@ -245,6 +264,65 @@ function Dashboard() {
     } finally {
 
       setIsChecking(false);
+    }
+  };
+
+  //--------------------------------------------------
+  // โหลด Recent Projects (3 รายการล่าสุด) จาก backend
+  // endpoint: POST /get_projects_v2 { email }
+  // เรียงตาม updated_at (ใหม่สุดก่อน) แล้วตัดเอาแค่ 3 รายการแรก
+  //--------------------------------------------------
+  const loadRecentProjects = async (cloudUrlValue, emailValue) => {
+
+    if (!cloudUrlValue || !emailValue) return;
+
+    try {
+
+      setLoadingProjects(true);
+
+      const response = await fetchWithTimeout(
+        `${cloudUrlValue}/get_projects_v2`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email: emailValue })
+        }
+      );
+
+      const result = await response.json();
+
+      console.log("PROJECTS:", result);
+
+      if (result.success && Array.isArray(result.data)) {
+
+        // ---------------------------------------------
+        // เรียงตาม updated_at ใหม่สุด -> เก่าสุด
+        // (ถ้า parse เป็นวันที่ไม่ได้ เช่น field ว่าง ให้ถือว่าเก่าสุด
+        // จะได้ไม่ทำให้ project ที่ข้อมูลไม่ครบมาแทรกอยู่บนสุดผิดที่)
+        // ---------------------------------------------
+        const sorted = [...result.data].sort((a, b) => {
+          const dateA = new Date(a.updated_at || a.created_at || 0).getTime() || 0;
+          const dateB = new Date(b.updated_at || b.created_at || 0).getTime() || 0;
+          return dateB - dateA;
+        });
+
+        setRecentProjects(sorted.slice(0, 3));
+
+      } else {
+
+        setRecentProjects([]);
+      }
+
+    } catch (err) {
+
+      console.error("LOAD RECENT PROJECTS FAILED:", err);
+      setRecentProjects([]);
+
+    } finally {
+
+      setLoadingProjects(false);
     }
   };
 
@@ -312,6 +390,35 @@ function Dashboard() {
 
  
   //--------------------------------------------------
+  // Helper: จัดรูปแบบ updated_at ที่ backend ส่งมาเป็น string ดิบจาก
+  // Firestore (เช่น "2026-07-22 07:31:41.965000+00:00") ให้อ่านง่ายขึ้น
+  // เป็น "2026-07-22 07:31:41 น." (ตัด microseconds + timezone offset ทิ้ง)
+  //--------------------------------------------------
+  const formatUpdatedAt = (raw) => {
+
+    if (!raw) return "";
+
+    // ดึงแค่ส่วน "YYYY-MM-DD HH:MM:SS" ตัวแรกที่เจอ ทิ้งเศษวินาที/timezone ท้ายสุด
+    const match = String(raw).match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
+
+    if (!match) return raw; // เจอรูปแบบแปลกๆ ที่ parse ไม่ได้ -> โชว์ค่าดิบไปก่อน ดีกว่าไม่โชว์อะไรเลย
+
+    return `${match[1]} น.`;
+  };
+
+  //--------------------------------------------------
+  // เปลี่ยนภาษา + เก็บลง localStorage เพื่อให้หน้าอื่นอ้างอิงได้
+  //--------------------------------------------------
+  const handleLanguageChange = (e) => {
+
+    const lang = e.target.value;
+
+    setLanguage(lang);
+
+    localStorage.setItem("language", lang);
+  };
+
+  //--------------------------------------------------
   // Logout
   //--------------------------------------------------
   const logout = () => {
@@ -339,6 +446,11 @@ function Dashboard() {
     // ใช้ค่า cache ไปก่อนระหว่างรอ backend ตอบกลับจริง
     setPlanName(localStorage.getItem("selected_plan") || "Free");
 
+    // ตั้งค่า default ภาษาใน localStorage ถ้ายังไม่เคยตั้งมาก่อน
+    if (!localStorage.getItem("language")) {
+      localStorage.setItem("language", "English");
+    }
+
     checkRegister();
 
   }, []);
@@ -350,9 +462,32 @@ function Dashboard() {
     localStorage.removeItem("resize_width");
     localStorage.removeItem("resize_height");
 
-    navigate("/new-project");
+    // ไทย -> /new-project (Newproject) | English -> /project (Ennewproject)
+    if (language === "ไทย") {
+      navigate("/new-project");
+    } else {
+      navigate("/project");
+    }
   };
   {/* end Camera View */}
+
+  //--------------------------------------------------
+  // Language-aware navigation สำหรับเมนูอื่นๆ
+  //--------------------------------------------------
+  const openProjects = () => {
+    // ไทย -> /projects (Projects) | English -> /enproject (EnProjects)
+    navigate(language === "ไทย" ? "/projects" : "/enproject");
+  };
+
+  const openTestModel = () => {
+    // ไทย -> /test-model (TestModel) | English -> /entest-model (EnTestModel)
+    navigate(language === "ไทย" ? "/test-model" : "/entest-model");
+  };
+
+  const openPricing = () => {
+    // ไทย -> /pricing (Pricing) | English -> /enpricing (EnPricing)
+    navigate(language === "ไทย" ? "/pricing" : "/enpricing");
+  };
 
   //--------------------------------------------------
   // Helper: อักษรตัวแรกของชื่อ สำหรับ avatar
@@ -369,9 +504,9 @@ function Dashboard() {
   //--------------------------------------------------
   const menuItems = [
     { label: "New Project", icon: "📂", tone: "primary", onClick: addnewproject },
-    { label: "Open Projects", icon: "🗂️", tone: "primary-soft", onClick: () => navigate("/projects") },
-    { label: "Test Model", icon: "🧪", tone: "violet", onClick: () => navigate("/test-model") },
-    { label: "Pricing", icon: "💳", tone: "green", onClick: () => navigate("/pricing") }
+    { label: "Open Projects", icon: "🗂️", tone: "primary-soft", onClick: openProjects },
+    { label: "Test Model", icon: "🧪", tone: "violet", onClick: openTestModel },
+    { label: "Pricing", icon: "💳", tone: "green", onClick: openPricing }
   ];
 
   return (
@@ -491,6 +626,38 @@ function Dashboard() {
             overflow: hidden;
             text-overflow: ellipsis;
           }
+
+          /* ---------- Top bar actions (language + logout) ---------- */
+          .dl-topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+          }
+
+          .dl-lang-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: var(--dl-surface) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%2367708C' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>") no-repeat right 12px center;
+            color: var(--dl-text);
+            border: 1px solid var(--dl-border);
+            padding: 9px 30px 9px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: var(--dl-font-body);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background-color .15s ease, transform .1s ease;
+          }
+          .dl-lang-select:hover { background-color: #F7F8FC; }
+          .dl-lang-select:active { transform: scale(.97); }
+          .dl-lang-select:focus {
+            outline: none;
+            border-color: var(--dl-primary);
+            box-shadow: 0 0 0 3px rgba(78,91,242,.15);
+          }
+
           .dl-btn-logout {
             display: inline-flex;
             align-items: center;
@@ -778,7 +945,7 @@ function Dashboard() {
         `}
       </style>
 
-      {/* ================= Top bar: User + Logout ================= */}
+      {/* ================= Top bar: User + Language + Logout ================= */}
       <div className="dl-topbar dl-fade dl-fade-1">
 
         <div className="dl-user">
@@ -798,9 +965,23 @@ function Dashboard() {
           )}
         </div>
 
-        <button className="dl-btn-logout" onClick={logout}>
-          🚪 Logout
-        </button>
+        <div className="dl-topbar-actions">
+
+          <select
+            className="dl-lang-select"
+            value={language}
+            onChange={handleLanguageChange}
+            aria-label="Language"
+          >
+            <option value="English">English</option>
+            <option value="ไทย">ไทย</option>
+          </select>
+
+          <button className="dl-btn-logout" onClick={logout}>
+            🚪 Logout
+          </button>
+
+        </div>
 
       </div>
 
@@ -811,7 +992,7 @@ function Dashboard() {
           <img src={logo} alt="DataLens AI" />
         </div>
 
-        <div className="dl-hero-tagline">CenixAI - The Central Network for AI Training Data</div>
+        <div className="dl-hero-tagline">Datasign AI - The Central Network for AI Training Data</div>
         <div className="dl-hero-sub">Powered by Google Cloud</div>
 
         <div className="dl-status-row">
@@ -849,15 +1030,35 @@ function Dashboard() {
             <div className="dl-plan-name">{planName}</div>
           )}
 
-          {!loadingPlan && planUsage && planLimits && (
-            <div className="dl-plan-usage">
-              📸 {planUsage.totalImages ?? 0}
-              {planLimits.maxImages ? ` / ${planLimits.maxImages}` : ""} images
-            </div>
-          )}
+                   {!loadingPlan && planUsage && planLimits && (
+            <>
+              <div className="dl-plan-usage">
+                📸 {planUsage.totalImages ?? 0}
+                {planLimits.maxImages ? ` / ${planLimits.maxImages}` : ""} images
+              </div>
+              <div className="dl-plan-usage">
+                💾 {formatBytes(planUsage.totalStorageBytes)}
+                {planLimits.storageBytes ? ` / ${formatBytes(planLimits.storageBytes)}` : ""}
+              </div>
+              {/* 🆕 แถบแสดงเปอร์เซ็นต์พื้นที่จัดเก็บที่ใช้ไป */}
+              {planLimits.storageBytes > 0 && (
+                <div style={{
+                  width: "100%", maxWidth: 220, height: 6, background: "#EEF0FF",
+                  borderRadius: 999, overflow: "hidden", marginTop: 6
+                }}>
+                  <div style={{
+                    width: `${Math.min(100, (planUsage.totalStorageBytes / planLimits.storageBytes) * 100)}%`,
+                    height: "100%",
+                    background: (planUsage.totalStorageBytes / planLimits.storageBytes) >= 0.9 ? "#E23D4F" : "#4E5BF2",
+                    transition: "width 0.4s ease"
+                  }} />
+                </div>
+              )}
+            </>
+          )}  
         </div>
 
-        <button className="dl-btn-upgrade" onClick={() => navigate("/pricing")}>
+        <button className="dl-btn-upgrade" onClick={openPricing}>
           Upgrade Plan
         </button>
 
@@ -918,9 +1119,8 @@ function Dashboard() {
                   <div style={{ minWidth: 0 }}>
                     <div className="dl-project-name">{project.project}</div>
                     <div className="dl-project-meta">
-                      📐 {project.resize_width} × {project.resize_height}
-                      {" · "}
-                      {project.project_type || "classification"}
+                      🖼️ {project.total_images ?? 0} รูป
+                      {project.updated_at ? ` · อัปเดตล่าสุด ${formatUpdatedAt(project.updated_at)}` : ""}
                     </div>
                   </div>
                 </div>

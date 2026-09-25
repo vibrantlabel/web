@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function Checkout() {
+export default function enCheckout() {
 
   const navigate = useNavigate();
 
@@ -313,7 +313,7 @@ const card = {
   }
      // 🩹 FIX: เดิม navigate("/payment") ทำให้กดแล้วไม่ไปหน้า Bookbank
      // เปลี่ยนเป็น path ที่ map ไปที่ component Bookbank.jsx โดยตรง
-     navigate("/bookbank");
+     navigate("/enbookbank");
 
 }}
 
@@ -321,7 +321,7 @@ const card = {
 
 
           >
-            ไปที่หน้า Bookbank เพื่อชำระเงิน
+            Continue to Payment
           </button>
 
           <button

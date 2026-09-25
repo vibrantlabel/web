@@ -2,17 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as ort from "onnxruntime-web";
 
-// ⚠️ ONNX Runtime Web ต้องโหลดไฟล์ .wasm เพิ่มเติม (นอกเหนือจาก JS bundle ปกติ)
-// วิธีที่ง่ายที่สุด: ให้โหลดจาก CDN ตรงๆ แบบนี้ (ไม่ต้อง copy ไฟล์ .wasm เข้า public/ เอง)
-// ถ้าต้องการรันแบบ offline ทั้งหมด ให้ copy ไฟล์จาก node_modules/onnxruntime-web/dist/*.wasm
-// ไปไว้ใน public/ort/ แล้วเปลี่ยน path ด้านล่างเป็น "/ort/"
+// ⚠️ ONNX Runtime Web needs to load an extra .wasm file (on top of the
+// regular JS bundle). The simplest approach: load it directly from a CDN
+// like this (no need to manually copy .wasm files into public/).
+// If you want to run fully offline, copy the files from
+// node_modules/onnxruntime-web/dist/*.wasm into public/ort/ and change the
+// path below to "/ort/"
 ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/";
 
-export default function TestModel() {
+export default function EnTestModel() {
   const navigate = useNavigate();
 
   // ==========================================================
-  // 📶 ESP32-CAM / กล้อง IP: เชื่อมต่อสตรีมภาพ (รูปแบบเดียวกับหน้า DetectionCapture)
+  // 📶 ESP32-CAM / IP Camera: connect to the video stream (same pattern
+  // as the DetectionCapture page)
   // ==========================================================
   const [esp32IpInput, setEsp32IpInput] = useState(
     localStorage.getItem("camera_url") || "192.168.43.181/stream"
@@ -21,22 +24,23 @@ export default function TestModel() {
   const [esp32Status, setEsp32Status] = useState("idle"); // idle | connecting | connected | error
   const [esp32StreamKey, setEsp32StreamKey] = useState(0);
   const esp32ImgRef = useRef(null);
-  const overlayCanvasRef = useRef(null); // canvas วาดกรอบ+ชื่อวัตถุทับสตรีม
-  const inferCanvasRef = useRef(null); // canvas ที่มองไม่เห็น ใช้ตัดเฟรมจากสตรีมไปประมวลผล (ไม่ต้องสร้างใหม่ทุกครั้ง)
-  const streamContainerRef = useRef(null); // container ของภาพกล้อง+canvas ทับ ใช้สำหรับขยายเต็มจอ
+  const overlayCanvasRef = useRef(null); // canvas that draws boxes+labels over the stream
+  const inferCanvasRef = useRef(null); // hidden canvas used to crop frames from the stream for processing (doesn't need to be recreated every time)
+  const streamContainerRef = useRef(null); // container of the camera image + overlay canvas, used for fullscreen
 
   // ==========================================================
-  // 🎥 เลือกแหล่งภาพ: ESP32-CAM (IP stream), เว็บแคมเครื่อง (getUserMedia) หรือ มือถือ (สแกน QR)
+  // 🎥 Choose the video source: ESP32-CAM (IP stream), the device's webcam
+  // (getUserMedia), or a mobile phone (QR scan)
   // ==========================================================
   const [videoSource, setVideoSource] = useState("esp32"); // "esp32" | "webcam" | "mobile"
   const webcamVideoRef = useRef(null);
-  const webcamStreamRef = useRef(null); // เก็บ MediaStream ไว้ stop track ตอนปิดกล้อง
+  const webcamStreamRef = useRef(null); // stores the MediaStream so tracks can be stopped when the camera is closed
   const [webcamStatus, setWebcamStatus] = useState("idle"); // idle | requesting | active | error
   const [webcamError, setWebcamError] = useState("");
 
   // ==========================================================
-  // 📱 Mobile Camera (สแกน QR Code): ใช้มือถือเป็นกล้อง ส่งภาพผ่าน Server
-  // (pattern เดียวกับ DetectionCapture.jsx)
+  // 📱 Mobile Camera (scan QR Code): use a phone as the camera, sending
+  // images through the server (same pattern as DetectionCapture.jsx)
   // ==========================================================
   const [mobileSessionId, setMobileSessionId] = useState(null);
   const [mobileQrUrl, setMobileQrUrl] = useState("");
@@ -54,12 +58,14 @@ export default function TestModel() {
     if (webcamVideoRef.current) webcamVideoRef.current.srcObject = null;
   };
 
-  // ขอสิทธิ์กล้องผ่าน getUserMedia (ต้องรันบน HTTPS หรือ localhost เท่านั้น ไม่งั้น browser จะบล็อก)
+  // Request camera permission via getUserMedia (must run on HTTPS or
+  // localhost only, otherwise the browser will block it)
   const handleStartWebcam = async () => {
     setWebcamStatus("requesting");
     setWebcamError("");
     try {
-      // facingMode: "environment" ขอกล้องหลังก่อนถ้าเป็นมือถือ (เหมาะกับสแกนวัตถุ) ถ้าไม่มีจะ fallback กล้องที่มี
+      // facingMode: "environment" requests the rear camera first on mobile
+      // (good for scanning objects); falls back to whatever camera is available
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
         audio: false
@@ -70,8 +76,8 @@ export default function TestModel() {
       }
       setWebcamStatus("active");
     } catch (err) {
-      console.error("เปิดกล้องไม่สำเร็จ:", err);
-      setWebcamError(err.message || "เปิดกล้องไม่สำเร็จ ตรวจสอบว่าอนุญาตสิทธิ์กล้องแล้วหรือยัง");
+      console.error("Failed to open camera:", err);
+      setWebcamError(err.message || "Failed to open camera. Check whether camera permission has been granted.");
       setWebcamStatus("error");
     }
   };
@@ -82,7 +88,8 @@ export default function TestModel() {
     setWebcamStatus("idle");
   };
 
-  // สลับแหล่งภาพ: หยุดสแกน + ปิดกล้อง/session เดิมก่อนเสมอ กันมีกล้อง/สตรีมค้างพร้อมกันสองอัน
+  // Switch video source: always stop scanning + close the previous
+  // camera/session first, to avoid having two cameras/streams active at once
   const handleSwitchVideoSource = (source) => {
     if (source === videoSource) return;
     setIsRunning(false);
@@ -99,7 +106,8 @@ export default function TestModel() {
   };
 
   // ==========================================================
-  // ⛶ ขยายภาพกล้องเต็มจอ (ใช้ Fullscreen API ของเบราว์เซอร์)
+  // ⛶ Expand the camera view to fullscreen (uses the browser's
+  // Fullscreen API)
   // ==========================================================
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -108,7 +116,7 @@ export default function TestModel() {
     if (!el) return;
     if (!document.fullscreenElement) {
       el.requestFullscreen?.().catch((err) => {
-        console.error("เข้าสู่โหมดเต็มจอไม่สำเร็จ:", err);
+        console.error("Failed to enter fullscreen mode:", err);
       });
     } else {
       document.exitFullscreen?.();
@@ -148,7 +156,8 @@ export default function TestModel() {
   };
 
   // ==========================================================
-  // 📱 Mobile Camera: สร้าง session + QR ให้มือถือสแกน (เหมือน DetectionCapture.jsx)
+  // 📱 Mobile Camera: create a session + QR for the phone to scan (same as
+  // DetectionCapture.jsx)
   // ==========================================================
   const generateMobileSessionId = () => {
     if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -189,7 +198,7 @@ export default function TestModel() {
     const email = localStorage.getItem("email");
 
     if (!serverUrl || !email) {
-      alert("กรุณาตรวจสอบการตั้งค่า Cloud URL และการ Login ของคุณ");
+      alert("Please check your Cloud URL settings and make sure you're logged in.");
       return;
     }
 
@@ -225,21 +234,26 @@ export default function TestModel() {
   };
 
   // ==========================================================
-  // 🧠 โหลดโมเดล ONNX (อัปโหลดไฟล์ .onnx จากเครื่อง) — รองรับเฉพาะ .onnx เท่านั้น
+  // 🧠 Load an ONNX model (upload a .onnx file from disk) — only .onnx
+  // files are supported
   // ==========================================================
   const [modelStatus, setModelStatus] = useState("idle"); // idle | loading | ready | error
   const [modelName, setModelName] = useState("");
   const [modelError, setModelError] = useState("");
   const sessionRef = useRef(null);
 
-  // 🆕 ปรับได้จาก UI ด้านล่าง (ช่อง "ขนาด input ที่เทรนมา (imgsz)") ค่านี้เป็นแค่ค่าเริ่มต้นตอนเปิดหน้าเท่านั้น
+  // 🆕 Adjustable from the UI below ("Trained input size (imgsz)" field) —
+  // this value is only the default when the page first opens
   const [inputSize, setInputSize] = useState(320);
 
-  // 🆕 เช็คนามสกุลไฟล์ก่อนเสมอ แล้วรับเฉพาะ .onnx เท่านั้น (ตัดการรองรับ .pt ออกทั้งหมด)
-  // แม้ <input accept=".onnx"> จะกรองให้เห็นแค่ไฟล์ .onnx ในกล่องเลือกไฟล์เป็นด่านแรกแล้ว
-  // แต่ accept ไม่ใช่การบังคับจริง (ผู้ใช้เปลี่ยนเป็น "All Files" ได้ในบาง OS) จึงต้องเช็คซ้ำ
-  // ในโค้ด JS เป็นด่านที่สองเสมอ ไม่งั้นถ้าเผลอเลือกไฟล์ผิดชนิดมา จะเจอ error ดิบจาก
-  // onnxruntime-web ที่อ่านไม่รู้เรื่องแทนข้อความที่เข้าใจง่าย
+  // 🆕 Always check the file extension first, and only accept .onnx (all
+  // .pt support has been removed). Even though <input accept=".onnx">
+  // already filters the file picker to show only .onnx files as the first
+  // line of defense, "accept" isn't actually enforced (users can switch to
+  // "All Files" on some OSes), so it must always be checked again here in
+  // JS as a second line of defense — otherwise picking the wrong file type
+  // by mistake would surface a raw, hard-to-understand error from
+  // onnxruntime-web instead of a clear message.
   const handleModelFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -248,7 +262,7 @@ export default function TestModel() {
 
     if (ext !== "onnx") {
       setModelStatus("error");
-      setModelError(`ไม่รองรับไฟล์นามสกุล ".${ext}" — รองรับเฉพาะไฟล์ .onnx เท่านั้น`);
+      setModelError(`File extension ".${ext}" is not supported — only .onnx files are supported.`);
       setModelName("");
       sessionRef.current = null;
       return;
@@ -265,7 +279,7 @@ export default function TestModel() {
           executionProviders: ["webgl"]
         });
       } catch (webglErr) {
-        console.warn("webgl ไม่รองรับ ใช้ wasm แทน:", webglErr);
+        console.warn("webgl not supported, falling back to wasm:", webglErr);
         session = await ort.InferenceSession.create(arrayBuffer, {
           executionProviders: ["wasm"]
         });
@@ -275,14 +289,14 @@ export default function TestModel() {
       setModelStatus("ready");
     } catch (err) {
       console.error("Load model failed:", err);
-      setModelError(err.message || "โหลดโมเดลไม่สำเร็จ");
+      setModelError(err.message || "Failed to load model");
       setModelStatus("error");
       sessionRef.current = null;
     }
   };
 
   // ==========================================================
-  // 🏷️ รายชื่อคลาส (ต้องตรงกับลำดับคลาสตอนเทรนเป๊ะๆ)
+  // 🏷️ Class names (must exactly match the class order used during training)
   // ==========================================================
   const [classNamesText, setClassNamesText] = useState(
     localStorage.getItem("test_model_classes") || ""
@@ -298,7 +312,7 @@ export default function TestModel() {
   };
 
   // ==========================================================
-  // 🔊 พูดออกเสียงชื่อวัตถุที่ตรวจพบ (Web Speech API)
+  // 🔊 Speak the names of detected objects (Web Speech API)
   // ==========================================================
   const [speechEnabled, setSpeechEnabled] = useState(true);
   const [speechLang, setSpeechLang] = useState("th-TH");
@@ -361,7 +375,7 @@ export default function TestModel() {
   const [maxFps, setMaxFps] = useState(0);
 
   // ==========================================================
-  // ▶️ สถานะการสแกนแบบ real-time
+  // ▶️ Real-time scanning state
   // ==========================================================
   const [isRunning, setIsRunning] = useState(false);
   const [detections, setDetections] = useState([]);
@@ -508,13 +522,14 @@ export default function TestModel() {
       ctx.lineWidth = Math.max(2, srcW / 300);
       ctx.strokeRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
 
-      // 🆕 แสดง label + % เสมอทุกกล่องที่ตรวจพบ ไม่ว่าจะอยู่ระดับความมั่นใจไหน
-      // (เดิมแสดงแค่ตอน isHighConf/isLowConf เท่านั้น ช่วงกลางไม่โชว์อะไรเลย)
-      const label = classNames[box.classId] || `class_${box.classId}`;
-      let text = `${label} ${scorePct}%`;
-      if (isLowConf) {
-        text = `${label} ${scorePct}% — เพิ่ม dataset ภาพนี้`;
+      let text = null;
+      if (isHighConf) {
+        const label = classNames[box.classId] || `class_${box.classId}`;
+        text = `${label} ${scorePct}%`;
+      } else if (isLowConf) {
+        text = `Add this to dataset ${scorePct}%`;
       }
+      if (!text) return;
 
       ctx.font = `${Math.max(16, srcW / 40)}px Segoe UI, sans-serif`;
       const textWidth = ctx.measureText(text).width;
@@ -651,9 +666,9 @@ export default function TestModel() {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <button onClick={() => navigate(-1)} style={{ padding: "8px 16px", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 8, cursor: "pointer" }}>
-          🎒 กลับหน้าหลัก
+          🎒 Back to Home
         </button>
-        <h2 style={{ margin: 0, color: "#7C4DFF" }}>🧪 Test Model — สแกนวัตถุแบบ Real-time</h2>
+        <h2 style={{ margin: 0, color: "#7C4DFF" }}>🧪 Test Model — Real-time Object Scanning</h2>
       </div>
 
       <div style={{
@@ -663,8 +678,8 @@ export default function TestModel() {
       }}>
         <span style={{ fontSize: 16 }}>⚠️</span>
         <span>
-          <strong>กล้องตอนเก็บข้อมูลกับตอนใช้งานจริงควรเป็นรุ่นเดียวกัน</strong> — กล้องต่างรุ่นให้สี
-          ความคมชัด และ noise ต่างกัน แม้ถ่ายวัตถุเดียวกัน ก็ทำให้ความแม่นยำลดลงได้
+          <strong>The camera used for data collection and the one used in production should be the same model.</strong> — Different
+          camera models produce different color, sharpness, and noise, even for the same object, which can reduce accuracy.
         </span>
       </div>
 
@@ -673,18 +688,18 @@ export default function TestModel() {
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
           <div style={{ background: "#fff", padding: 18, borderRadius: 14, border: "1px solid #E5E7EB" }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 15 }}>🧠 โมเดล (.onnx)</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 15 }}>🧠 Model (.onnx)</h3>
             <input type="file" accept=".onnx" onChange={handleModelFileChange} style={{ fontSize: 13 }} />
             <div style={{ marginTop: 8, fontSize: 12.5 }}>
-              {modelStatus === "idle" && <span style={{ color: "#94A3B8" }}>ยังไม่ได้เลือกไฟล์โมเดล</span>}
-              {modelStatus === "loading" && <span style={{ color: "#D97706" }}>⏳ กำลังโหลดโมเดล...</span>}
-              {modelStatus === "ready" && <span style={{ color: "#16A672" }}>✅ พร้อมใช้งาน: {modelName}</span>}
+              {modelStatus === "idle" && <span style={{ color: "#94A3B8" }}>No model file selected yet</span>}
+              {modelStatus === "loading" && <span style={{ color: "#D97706" }}>⏳ Loading model...</span>}
+              {modelStatus === "ready" && <span style={{ color: "#16A672" }}>✅ Ready: {modelName}</span>}
               {modelStatus === "error" && <span style={{ color: "#E23D4F" }}>❌ {modelError}</span>}
             </div>
 
             <div style={{ marginTop: 12 }}>
               <label style={{ fontSize: 12.5, color: "#475569", display: "block", marginBottom: 4 }}>
-                ขนาด input ที่เทรนมา (imgsz)
+                Trained input size (imgsz)
               </label>
               <input
                 type="number"
@@ -696,21 +711,21 @@ export default function TestModel() {
           </div>
 
           <div style={{ background: "#fff", padding: 18, borderRadius: 14, border: "1px solid #E5E7EB" }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 15 }}>🏷️ รายชื่อคลาส (ที่ใช้ตอนเทรนโมเดล)</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 15 }}>🏷️ Class names (used during model training)</h3>
             <textarea
               value={classNamesText}
               onChange={(e) => handleClassNamesChange(e.target.value)}
-              placeholder="เช่น: helmet, no-helmet  (คั่นด้วยจุลภาค เรียงลำดับให้ตรงกับตอนเทรนเป๊ะๆ)"
+              placeholder="e.g.: helmet, no-helmet  (comma-separated, order must exactly match training)"
               rows={3}
               style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #cbd5e1", fontSize: 13, resize: "vertical" }}
             />
             <div style={{ fontSize: 11.5, color: "#94A3B8", marginTop: 6 }}>
-              พบ {classNames.length} คลาส: {classNames.join(", ") || "-"}
+              Found {classNames.length} class(es): {classNames.join(", ") || "-"}
             </div>
           </div>
 
           <div style={{ background: "#fff", padding: 18, borderRadius: 14, border: "1px solid #E5E7EB" }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 15 }}>🎥 แหล่งภาพที่ใช้สแกน</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 15 }}>🎥 Video source for scanning</h3>
             <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
               <button
                 type="button"
@@ -734,7 +749,7 @@ export default function TestModel() {
                   color: videoSource === "webcam" ? "#5B2FD1" : "#475569"
                 }}
               >
-                💻 เว็บแคมเครื่อง
+                💻 Device Webcam
               </button>
               <button
                 type="button"
@@ -746,7 +761,7 @@ export default function TestModel() {
                   color: videoSource === "mobile" ? "#5B2FD1" : "#475569"
                 }}
               >
-                📱 มือถือ (สแกน QR)
+                📱 Mobile (scan QR)
               </button>
             </div>
 
@@ -765,17 +780,17 @@ export default function TestModel() {
                   />
                   {esp32Status === "connected" ? (
                     <button onClick={handleDisconnectEsp32} style={{ padding: "0 16px", borderRadius: 8, border: "none", background: "#EF4444", color: "#fff", fontWeight: "bold", cursor: "pointer" }}>
-                      ตัดการเชื่อมต่อ
+                      Disconnect
                     </button>
                   ) : (
                     <button onClick={handleConnectEsp32} style={{ padding: "0 16px", borderRadius: 8, border: "none", background: "#0078D7", color: "#fff", fontWeight: "bold", cursor: "pointer" }}>
-                      🔌 เชื่อมต่อ
+                      🔌 Connect
                     </button>
                   )}
                 </div>
-                {esp32Status === "connecting" && <p style={{ color: "#D97706", fontSize: 12.5, margin: 0 }}>⏳ กำลังเชื่อมต่อ...</p>}
-                {esp32Status === "error" && <p style={{ color: "#EF4444", fontSize: 12.5, margin: 0 }}>❌ เชื่อมต่อไม่สำเร็จ ตรวจสอบ IP</p>}
-                {esp32Status === "connected" && <p style={{ color: "#16A672", fontSize: 12.5, margin: 0 }}>✅ เชื่อมต่อแล้ว</p>}
+                {esp32Status === "connecting" && <p style={{ color: "#D97706", fontSize: 12.5, margin: 0 }}>⏳ Connecting...</p>}
+                {esp32Status === "error" && <p style={{ color: "#EF4444", fontSize: 12.5, margin: 0 }}>❌ Connection failed. Check the IP address.</p>}
+                {esp32Status === "connected" && <p style={{ color: "#16A672", fontSize: 12.5, margin: 0 }}>✅ Connected</p>}
               </>
             ) : videoSource === "mobile" ? (
               <>
@@ -787,41 +802,41 @@ export default function TestModel() {
                   }}
                 >
                   {mobileSessionId
-                    ? (mobileStatus === "connected" ? "✅ เชื่อมต่อมือถือแล้ว (กดเพื่อสร้าง QR ใหม่)" : "🔄 สร้าง QR Code ใหม่")
-                    : "📱 สร้าง QR Code เพื่อเชื่อมมือถือ"}
+                    ? (mobileStatus === "connected" ? "✅ Mobile connected (click to generate a new QR)" : "🔄 Generate a new QR Code")
+                    : "📱 Generate a QR Code to connect your phone"}
                 </button>
                 {mobileStatus === "waiting" && (
-                  <p style={{ color: "#D97706", fontSize: 12.5, margin: "8px 0 0" }}>⏳ รอมือถือสแกน QR แล้วเปิดกล้อง...</p>
+                  <p style={{ color: "#D97706", fontSize: 12.5, margin: "8px 0 0" }}>⏳ Waiting for the phone to scan the QR and open its camera...</p>
                 )}
                 {mobileStatus === "error" && (
-                  <p style={{ color: "#EF4444", fontSize: 12.5, margin: "8px 0 0" }}>❌ เชื่อมต่อไม่สำเร็จ ลองกดสร้าง QR ใหม่</p>
+                  <p style={{ color: "#EF4444", fontSize: 12.5, margin: "8px 0 0" }}>❌ Connection failed. Try generating a new QR.</p>
                 )}
                 {mobileStatus === "connected" && (
-                  <p style={{ color: "#16A672", fontSize: 12.5, margin: "8px 0 0" }}>✅ มือถือเชื่อมต่อและกำลังส่งภาพเข้ามาแล้ว</p>
+                  <p style={{ color: "#16A672", fontSize: 12.5, margin: "8px 0 0" }}>✅ Phone connected and sending video</p>
                 )}
               </>
             ) : (
               <>
                 {webcamStatus === "active" ? (
                   <button onClick={handleStopWebcam} style={{ width: "100%", padding: "10px 16px", borderRadius: 8, border: "none", background: "#EF4444", color: "#fff", fontWeight: "bold", cursor: "pointer" }}>
-                    📷 ปิดกล้อง
+                    📷 Turn off camera
                   </button>
                 ) : (
                   <button onClick={handleStartWebcam} disabled={webcamStatus === "requesting"} style={{ width: "100%", padding: "10px 16px", borderRadius: 8, border: "none", background: "#0078D7", color: "#fff", fontWeight: "bold", cursor: webcamStatus === "requesting" ? "not-allowed" : "pointer" }}>
-                    {webcamStatus === "requesting" ? "⏳ กำลังขอสิทธิ์กล้อง..." : "📷 เปิดกล้อง"}
+                    {webcamStatus === "requesting" ? "⏳ Requesting camera permission..." : "📷 Turn on camera"}
                   </button>
                 )}
                 {webcamStatus === "error" && <p style={{ color: "#EF4444", fontSize: 12.5, margin: "8px 0 0" }}>❌ {webcamError}</p>}
-                {webcamStatus === "active" && <p style={{ color: "#16A672", fontSize: 12.5, margin: "8px 0 0" }}>✅ กล้องเปิดอยู่</p>}
+                {webcamStatus === "active" && <p style={{ color: "#16A672", fontSize: 12.5, margin: "8px 0 0" }}>✅ Camera is on</p>}
                 <p style={{ fontSize: 11, color: "#94A3B8", margin: "8px 0 0" }}>
-                  ต้องรันบน HTTPS หรือ localhost เท่านั้น ไม่งั้น browser จะบล็อกสิทธิ์กล้องอัตโนมัติ
+                  Must be run on HTTPS or localhost only, otherwise the browser will automatically block camera access.
                 </p>
               </>
             )}
           </div>
 
           <div style={{ background: "#fff", padding: 18, borderRadius: 14, border: "1px solid #E5E7EB" }}>
-            <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 15 }}>🎚️ ค่าตรวจจับ</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 15 }}>🎚️ Detection settings</h3>
 
             <label style={{ fontSize: 12.5, color: "#475569" }}>Confidence ≥ {confThreshold.toFixed(2)}</label>
             <input type="range" min={0.05} max={0.95} step={0.05} value={confThreshold}
@@ -834,30 +849,30 @@ export default function TestModel() {
               style={{ width: "100%", accentColor: "#7C4DFF", marginBottom: 16 }} />
 
             <label style={{ fontSize: 12.5, color: "#475569" }}>
-              ✅ ความแม่นยำสูง (โชว์ชื่อ + พูด) ≥ {(highConfThreshold * 100).toFixed(0)}%
+              ✅ High confidence (show name + speak) ≥ {(highConfThreshold * 100).toFixed(0)}%
             </label>
             <input type="range" min={lowConfThreshold} max={0.99} step={0.01} value={highConfThreshold}
               onChange={(e) => setHighConfThreshold(Number(e.target.value))}
               style={{ width: "100%", accentColor: "#22C55E", marginBottom: 12 }} />
 
             <label style={{ fontSize: 12.5, color: "#475569" }}>
-              ⚠️ ความแม่นยำต่ำ (โชว์ "เพิ่ม dataset") &lt; {(lowConfThreshold * 100).toFixed(0)}%
+              ⚠️ Low confidence (show "add to dataset") &lt; {(lowConfThreshold * 100).toFixed(0)}%
             </label>
             <input type="range" min={confThreshold} max={0.99} step={0.01} value={lowConfThreshold}
               onChange={(e) => setLowConfThreshold(Number(e.target.value))}
               style={{ width: "100%", accentColor: "#F59E0B", marginBottom: 4 }} />
             <p style={{ fontSize: 11, color: "#94A3B8", margin: "0 0 16px" }}>
-              กรอบขึ้นตาม Confidence ด้านบนเสมอ — สูงกว่าเกณฑ์บน โชว์ชื่อจริง+พูด / ต่ำกว่าเกณฑ์ล่าง โชว์คำแนะนำเก็บภาพเพิ่ม / อยู่ระหว่างกลางไม่โชว์ label
+              Boxes always appear based on the Confidence setting above — above the high threshold shows the real name + speaks it / below the low threshold shows a suggestion to collect more images / in between shows no label.
             </p>
 
             <label style={{ fontSize: 12.5, color: "#475569" }}>
-              จำกัด FPS สูงสุด: {maxFps === 0 ? "ไม่จำกัด" : `${maxFps} FPS`}
+              Max FPS limit: {maxFps === 0 ? "Unlimited" : `${maxFps} FPS`}
             </label>
             <input type="range" min={0} max={30} step={1} value={maxFps}
               onChange={(e) => setMaxFps(Number(e.target.value))}
               style={{ width: "100%", accentColor: "#7C4DFF", marginBottom: 16 }} />
             <p style={{ fontSize: 11, color: "#94A3B8", margin: "-10px 0 16px" }}>
-              ปล่อยไว้ที่ "ไม่จำกัด" เพื่อความไวสูงสุด หรือ cap ไว้เพื่อลดความร้อน/แบตเตอรี่
+              Leave it at "Unlimited" for the highest responsiveness, or cap it to reduce heat/battery use.
             </p>
 
             <label style={{ fontSize: 12.5, color: "#475569", display: "flex", alignItems: "center", gap: 8, marginBottom: 8, cursor: "pointer" }}>
@@ -874,7 +889,7 @@ export default function TestModel() {
                 }}
                 style={{ accentColor: "#7C4DFF" }}
               />
-              🔊 พูดบอกชื่อวัตถุที่ตรวจพบ
+              🔊 Speak the names of detected objects
             </label>
             {speechEnabled && (
               <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
@@ -888,7 +903,7 @@ export default function TestModel() {
                     color: speechLang === "th-TH" ? "#5B2FD1" : "#475569"
                   }}
                 >
-                  🇹🇭 ไทย
+                  🇹🇭 Thai
                 </button>
                 <button
                   type="button"
@@ -907,13 +922,13 @@ export default function TestModel() {
 
             {!canStartScanning && (
               <p style={{ fontSize: 11.5, color: "#94A3B8", marginTop: 8, marginBottom: 0 }}>
-                ต้องโหลดโมเดล + เชื่อมต่อกล้อง + กรอกรายชื่อคลาส ให้ครบก่อนถึงจะเริ่มสแกนได้
+                You need to load a model + connect a camera + fill in the class names before you can start scanning.
               </p>
             )}
             {inferenceMs !== null && (
               <p style={{ fontSize: 11.5, color: "#475569", marginTop: 8, marginBottom: 0 }}>
-                ⏱️ ประมวลผล: {inferenceMs} ms/เฟรม
-                {actualFps !== null && <> &nbsp;|&nbsp; 🎞️ FPS จริง: <strong>{actualFps}</strong></>}
+                ⏱️ Inference: {inferenceMs} ms/frame
+                {actualFps !== null && <> &nbsp;|&nbsp; 🎞️ Actual FPS: <strong>{actualFps}</strong></>}
               </p>
             )}
           </div>
@@ -1006,17 +1021,17 @@ export default function TestModel() {
                   <div style={{ textAlign: "center", padding: 16 }}>
                     <img
                       src={mobileQrUrl}
-                      alt="QR Code เชื่อมมือถือ"
+                      alt="QR Code to connect phone"
                       style={{ width: 180, height: 180, borderRadius: 10, background: "#fff", padding: 8 }}
                     />
                     <p style={{ color: "#fff", fontSize: 12.5, marginTop: 10, marginBottom: 0 }}>
-                      📱 เปิดกล้องมือถือแล้วสแกน QR (ใช้ google Lens ในการสแกน QR Code)
+                      📱 Open your phone's camera and scan the QR (use Google Lens to scan the QR Code)
                     </p>
                     {mobileStatus === "waiting" && (
-                      <p style={{ color: "#FBBF24", fontSize: 11.5, marginTop: 4 }}>⏳ รอมือถือเชื่อมต่อ...</p>
+                      <p style={{ color: "#FBBF24", fontSize: 11.5, marginTop: 4 }}>⏳ Waiting for the phone to connect...</p>
                     )}
                     {mobileStatus === "error" && (
-                      <p style={{ color: "#F87171", fontSize: 11.5, marginTop: 4 }}>❌ เชื่อมต่อไม่สำเร็จ ลองกดสร้าง QR ใหม่</p>
+                      <p style={{ color: "#F87171", fontSize: 11.5, marginTop: 4 }}>❌ Connection failed. Try generating a new QR.</p>
                     )}
                   </div>
                 ) : null}
@@ -1029,8 +1044,8 @@ export default function TestModel() {
                   <p style={{ fontSize: 48, margin: 0 }}>📹</p>
                   <p>
                     {videoSource === "esp32"
-                      ? (esp32Status === "connecting" ? "⏳ กำลังเชื่อมต่อ..." : 'กรอก IP กล้องแล้วกด "เชื่อมต่อ" ทางฝั่งซ้ายก่อน')
-                      : (webcamStatus === "requesting" ? "⏳ กำลังขอสิทธิ์กล้อง..." : 'กด "เปิดกล้อง" ทางฝั่งซ้ายก่อน')}
+                      ? (esp32Status === "connecting" ? "⏳ Connecting..." : 'Enter the camera IP and click "Connect" on the left first')
+                      : (webcamStatus === "requesting" ? "⏳ Requesting camera permission..." : 'Click "Turn on camera" on the left first')}
                   </p>
                 </div>
               </div>
@@ -1040,7 +1055,7 @@ export default function TestModel() {
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#aaa", textAlign: "center", padding: 20, background: "#000" }}>
                 <div>
                   <p style={{ fontSize: 48, margin: 0 }}>📱</p>
-                  <p>กดปุ่ม "สร้าง QR Code เพื่อเชื่อมมือถือ" ทางฝั่งซ้ายก่อน แล้วใช้มือถือสแกนเพื่อเริ่มใช้งาน</p>
+                  <p>Click "Generate a QR Code to connect your phone" on the left first, then scan it with your phone to get started.</p>
                 </div>
               </div>
             )}
@@ -1048,7 +1063,7 @@ export default function TestModel() {
             {isSourceConnected && (
               <button
                 onClick={handleToggleFullscreen}
-                title={isFullscreen ? "ย่อออกจากเต็มจอ" : "ขยายเต็มจอ"}
+                title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                 style={{
                   position: "absolute",
                   top: 12,
@@ -1075,7 +1090,7 @@ export default function TestModel() {
           <div style={{ background: "#fff", padding: 18, borderRadius: 14, border: "1px solid #E5E7EB" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
               <h3 style={{ margin: 0, fontSize: 15 }}>
-                📋 วัตถุที่ตรวจพบ {isRunning && "(อัปเดตแบบ real-time)"}
+                📋 Detected objects {isRunning && "(updating in real-time)"}
               </h3>
               <button
                 disabled={!canStartScanning}
@@ -1087,13 +1102,13 @@ export default function TestModel() {
                   color: "#fff", whiteSpace: "nowrap"
                 }}
               >
-                {isRunning ? "⏹️ หยุดสแกน" : "▶️ เริ่มสแกนวัตถุ"}
+                {isRunning ? "⏹️ Stop scanning" : "▶️ Start scanning"}
               </button>
             </div>
 
             {Object.keys(detectionSummary).length === 0 ? (
               <p style={{ color: "#94A3B8", fontSize: 13, margin: 0 }}>
-                {isRunning ? "ยังไม่พบวัตถุในเฟรมนี้..." : "ยังไม่ได้เริ่มสแกน"}
+                {isRunning ? "No objects detected in this frame yet..." : "Scanning hasn't started yet"}
               </p>
             ) : (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>

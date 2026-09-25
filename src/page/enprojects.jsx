@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Projects() {
+export default function EnProjects() {
   const SERVER_URL = localStorage.getItem("cloud_url");
   const navigate = useNavigate();
   const email = localStorage.getItem("email");
@@ -10,8 +10,9 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
 
   // ==========================================================
-  // 🆕 Plan usage/limits — ใช้เช็คโควต้ารูปภาพก่อนกด "Add Data"
-  // ดึงจาก backend เดียวกับที่ Dashboard.jsx ใช้ (user/{email}/plan/select)
+  // 🆕 Plan usage/limits — used to check the image quota before
+  // clicking "Add Data". Pulled from the same backend endpoint
+  // Dashboard.jsx uses (user/{email}/plan/select)
   // ==========================================================
   const [planUsage, setPlanUsage] = useState(null);
   const [planLimits, setPlanLimits] = useState(null);
@@ -34,17 +35,18 @@ export default function Projects() {
     backgroundColor: "#DC3545"
   };
 
-  // 🆕 ปุ่ม Add Data ตอนโควต้าเต็ม — สีเทา cursor not-allowed ให้เห็นชัดว่ากดไม่ได้
+  // 🆕 Add Data button when quota is full — grey with not-allowed cursor,
+  // to make it obvious it can't be clicked
   const disabledButton = {
     ...smallButton,
     backgroundColor: "#ccc",
     cursor: "not-allowed"
   };
 
-  // โหลดข้อมูลโปรเจกต์ครั้งแรกที่เข้าหน้า (ไม่มีแท็บให้สลับแล้ว)
+  // Load project data the first time the page loads (no tabs to switch anymore)
   useEffect(() => {
     loadProjects();
-    loadUserPlan(); // 🆕 โหลด usage/limits มาเช็คโควต้าคู่กันไปเลย
+    loadUserPlan(); // 🆕 Load usage/limits at the same time to check the quota
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -60,16 +62,16 @@ export default function Projects() {
       });
 
       const result = await response.json();
-      console.log("[DEBUG] ข้อมูลโปรเจกต์ที่ได้กลับมา:", result);
+      console.log("[DEBUG] Project data received:", result);
 
       if (result.success) {
         setProjects(result.data || []);
       } else {
-        console.error("Backend แจ้งเตือนข้อผิดพลาด:", result.error);
+        console.error("Backend reported an error:", result.error);
         setProjects([]);
       }
     } catch (error) {
-      console.error("เกิดข้อผิดพลาดในการโหลดโปรเจกต์:", error);
+      console.error("Error loading projects:", error);
       setProjects([]);
     } finally {
       setLoading(false);
@@ -77,8 +79,9 @@ export default function Projects() {
   };
 
   // ==========================================================
-  // 🆕 โหลด usage/limits ของ plan ปัจจุบัน จาก user/{email}/plan/select
-  // (endpoint เดียวกับที่ Dashboard.jsx เรียก) ใช้เช็คว่ารูปภาพเกินโควต้าหรือยัง
+  // 🆕 Load usage/limits for the current plan from user/{email}/plan/select
+  // (same endpoint Dashboard.jsx calls) to check whether the image quota
+  // has been exceeded
   // ==========================================================
   const loadUserPlan = async () => {
     if (!SERVER_URL || !email) return;
@@ -95,26 +98,29 @@ export default function Projects() {
       }
     } catch (err) {
       console.error("LOAD USER PLAN FAILED:", err);
-      // ถ้าโหลดไม่สำเร็จ ปล่อยเป็น null ไป -> isQuotaExceeded จะเป็น false โดยอัตโนมัติ
-      // (ไม่ block การใช้งานถ้าเช็คโควต้าไม่ได้ ดีกว่าทำให้ปุ่มกดไม่ได้ทั้งที่ไม่รู้สาเหตุจริง)
+      // If loading fails, leave it as null -> isQuotaExceeded will automatically
+      // be false (better not to block usage over a failed quota check than to
+      // disable the button for an unknown reason)
     }
   };
 
-  // 🆕 คำนวณว่ารูปภาพเกินโควต้าที่ plan กำหนดไว้หรือยัง
-  // เกินก็ต่อเมื่อ limits.maxImages มีค่าจริง (ไม่ใช่ 0/undefined ซึ่งอาจหมายถึง "ไม่จำกัด")
+  // 🆕 Determine whether image usage has exceeded the plan's quota.
+  // Only counts as exceeded if limits.maxImages has a real value (not 0/undefined,
+  // which may mean "unlimited")
   const isQuotaExceeded =
     !!planLimits?.maxImages && (planUsage?.totalImages ?? 0) >= planLimits.maxImages;
 
   // ==========================================================
-  // Add Data -> ไปหน้า /detection-capture (ใช้ layout เดียวกับที่เคยใช้กับ
-  // แท็บ Detection/Segmentation เดิม เพราะตอนนี้เลือก bbox/polygon ต่อวัตถุ
-  // เองในหน้า capture แล้ว ไม่ต้องแยกหน้าตาม type อีก)
+  // Add Data -> goes to /detection-capture (uses the same layout previously
+  // used for the old Detection/Segmentation tabs, since bbox/polygon per
+  // object is now chosen directly on the capture page — no need for
+  // separate pages per type anymore)
   // ==========================================================
   const handleAddData = (project) => {
   if (isQuotaExceeded) {
     alert(
-        `คุณใช้งานครบโควต้ารูปภาพของแพลนแล้ว (${planUsage.totalImages}/${planLimits.maxImages} รูป)\n` +
-        `กรุณาอัปเกรดแพลนเพื่อเพิ่มโควต้ารูปภาพ`
+        `You've used up your plan's image quota (${planUsage.totalImages}/${planLimits.maxImages} images)\n` +
+        `Please upgrade your plan to increase your image quota`
       );
     return;
   }
@@ -122,19 +128,19 @@ export default function Projects() {
   localStorage.setItem("project_name", project.project);
   localStorage.setItem("total_images", project.total_images || 0);
 
-  navigate("/detection-capture", {
-    state: { planUsage, planLimits }   // ✅ ส่ง state ที่มีอยู่แล้วในหน้านี้ต่อไป
+  navigate("/endetection-capture", {
+    state: { planUsage, planLimits }   // ✅ Pass along the state already available on this page
   });
 };
 
   const goToSelectTraining = (project) => {
-    navigate("/page_train_export", {
+    navigate("/enpage_train_export", {
       state: { project }
     });
   };
 
   const deleteProject = async (project) => {
-    if (!window.confirm(`ต้องการลบโปรเจกต์ "${project.project}" ใช่หรือไม่? ข้อมูลทั้งหมดจะถูกลบถาวร`)) return;
+    if (!window.confirm(`Are you sure you want to delete the project "${project.project}"? All data will be permanently deleted.`)) return;
     try {
       const response = await fetch(`${SERVER_URL}/delete_project`, {
         method: "POST",
@@ -157,7 +163,7 @@ export default function Projects() {
   return (
     <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "clamp(12px, 4vw, 20px)", boxSizing: "border-box" }}>
 
-      {/* ส่วนหัวแสดงผลควบคุมระบบหลัก */}
+      {/* Header with main system controls */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 15 }}>
         <h2 style={{ margin: 0, fontSize: "clamp(18px, 4.5vw, 22px)" }}>📂 Project Workspace</h2>
         <div style={{ display: "flex", gap: 10 }}>
@@ -166,7 +172,8 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* 🆕 แถบเตือนโควต้าเต็ม — โชว์รวมด้านบนสุดของหน้า ให้เห็นชัดตั้งแต่เข้ามา ไม่ต้องรอกดปุ่มถึงจะรู้ */}
+      {/* 🆕 Quota-full warning banner — shown at the top of the page so it's
+          visible right away, without needing to click a button first */}
       {isQuotaExceeded && (
         <div style={{
           background: "#FFF4E0", border: "1px solid #F0C36D", borderRadius: 10,
@@ -175,8 +182,8 @@ export default function Projects() {
         }}>
           <span>⚠️</span>
           <span>
-            คุณใช้งานครบโควต้ารูปภาพแล้ว ({planUsage.totalImages}/{planLimits.maxImages} รูป) —
-            ไม่สามารถเพิ่มข้อมูลใหม่ได้จนกว่าจะอัปเกรดแพลน
+            You've used up your image quota ({planUsage.totalImages}/{planLimits.maxImages} images) —
+            you can't add new data until you upgrade your plan.
           </span>
           <button
             onClick={() => navigate("/pricing")}
@@ -187,44 +194,46 @@ export default function Projects() {
         </div>
       )}
 
-      {loading && <p style={{ textAlign: "center", fontSize: "16px", color: "#666" }}>กำลังโหลดข้อมูลโปรเจกต์จาก Firebase...</p>}
+      {loading && <p style={{ textAlign: "center", fontSize: "16px", color: "#666" }}>Loading project data from Firebase...</p>}
 
       {!loading && projects.length === 0 && (
         <p style={{ textAlign: "center", padding: "40px", background: "#f9fafb", borderRadius: "12px", color: "#888", border: "1px dashed #ccc" }}>
-          ไม่มีข้อมูลโปรเจกต์
+          No projects found
         </p>
       )}
 
-      {/* รายการการ์ดโปรเจกต์ */}
+      {/* Project card list */}
       {!loading && projects.map((project, index) => (
         <div key={index} style={{ border: "1px solid #ddd", borderRadius: 16, padding: "clamp(14px, 3vw, 20px)", marginBottom: 25, background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", boxSizing: "border-box" }}>
 
-          {/* แสดงชื่อโปรเจกต์ */}
+          {/* Project name */}
           <h3 style={{ margin: "0 0 10px 0", fontSize: "clamp(16px, 4vw, 19px)", color: "#333" }}>
             📁 Project : {project.project}
           </h3>
 
-          {/* ปุ่มควบคุมระบบโปรเจกต์หลัก */}
+          {/* Main project control buttons */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: "12px", marginBottom: "15px" }}>
             <button
               onClick={() => handleAddData(project)}
               disabled={isQuotaExceeded}
-              title={isQuotaExceeded ? "โควต้ารูปภาพเต็มแล้ว กรุณาอัปเกรดแพลน" : ""}
+              title={isQuotaExceeded ? "Image quota reached. Please upgrade your plan." : ""}
               style={isQuotaExceeded ? disabledButton : { ...smallButton, backgroundColor: "#28A745" }}
             >
-              ➕ Add Dataset
+              ➕ Add Data
             </button>
 
             <button onClick={() => goToSelectTraining(project)} style={smallButton}>⚙️ Training Model</button>
             <button onClick={() => deleteProject(project)} style={dangerButton}>🗑️ Delete Project</button>
           </div>
 
-          {/* สถิติจำนวนรูปรวม */}
+          {/* Total image count */}
           <p style={{ fontSize: "14px", color: "#666", margin: "0 0 15px 0" }}>
-            🖼️ รูปภาพรวม: {project.total_images || 0} รูป
+            🖼️ Total images: {project.total_images || 0}
           </p>
 
-           
+          <div style={{ background: "#f9fafb", padding: "12px 15px", borderRadius: "8px", border: "1px dashed #ccc", fontSize: "13px", color: "#555" }}>
+            {/*🔗 Database path structure: <code>{`/user/${email}/project/${project.project}`}</code> */}
+          </div>
 
         </div>
       ))}

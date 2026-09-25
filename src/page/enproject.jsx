@@ -4,17 +4,18 @@ import { useNavigate } from "react-router-dom";
 const SERVER_URL = localStorage.getItem("cloud_url");
 
 // ==========================================================
-// 🏭 V3: Template Preset ต่ออุตสาหกรรม
-// เลือกแล้ว auto-fill knownClasses ให้ทันที (ใช้ key เดียวกับที่
-// DetectionCapture.jsx อ่านอยู่แล้ว: known_classes_${project})
-// เพิ่ม preset ใหม่ในอนาคตแค่เพิ่ม object ในอาเรย์นี้ ไม่ต้องแก้ที่อื่น
+// 🏭 V3: Industry Template Presets
+// Selecting one auto-fills knownClasses immediately (uses the same key
+// DetectionCapture.jsx already reads: known_classes_${project})
+// To add a new preset in the future, just add an object to this array —
+// no need to change anything else.
 // ==========================================================
 const TEMPLATE_PRESETS = [
   {
     id: "ppe_safety",
     icon: "🦺",
     name: "PPE Safety",
-    desc: "ตรวจจับการสวมอุปกรณ์นิรภัย เช่น หมวก เสื้อกั๊ก",
+    desc: "Detect safety equipment usage, e.g. helmets, vests",
     classes: ["helmet", "no_helmet"],
     color: { bg: "#FFF3E0", text: "#7C4A03" }
   },
@@ -22,7 +23,7 @@ const TEMPLATE_PRESETS = [
     id: "retail_counting",
     icon: "🛒",
     name: "Retail Counting",
-    desc: "นับสินค้า / ตรวจชั้นวางสินค้าว่าง",
+    desc: "Count products / detect empty shelves",
     classes: ["product", "empty_shelf"],
     color: { bg: "#E3F2FD", text: "#0D47A1" }
   },
@@ -30,7 +31,7 @@ const TEMPLATE_PRESETS = [
     id: "defect_detection",
     icon: "🔍",
     name: "Defect Detection",
-    desc: "ตรวจจับตำหนิ / ของเสียบนสายการผลิต",
+    desc: "Detect defects / rejects on the production line",
     classes: ["defect", "normal"],
     color: { bg: "#FFEBEE", text: "#B71C1C" }
   },
@@ -38,18 +39,18 @@ const TEMPLATE_PRESETS = [
     id: "custom",
     icon: "✨",
     name: "Custom",
-    desc: "กำหนดเองทั้งหมด (ไม่มีคลาสล่วงหน้า)",
+    desc: "Fully custom setup (no preset classes)",
     classes: [],
     color: { bg: "#F5F5F5", text: "#424242" }
   }
 ];
 
 // ==========================================================
-// 🎯 V3: Deployment Target — กำหนดขนาดภาพเริ่มต้นให้เหมาะสมอัตโนมัติ
-// กันปัญหาตั้งขนาดภาพผิดจุดประสงค์ (เช่น ตั้ง 128px ทั้งที่จะใช้ cloud
-// หรือตั้ง 640px ทั้งที่จะรันบน ESP32-S3 ซึ่งรันไม่ไหวจริง)
-// ค่านี้แค่ "ตั้งค่าเริ่มต้นให้" — ยังไปปรับเปลี่ยนเพิ่มเติมเองได้ที่
-// หน้า DetectionCapture.jsx ตามปกติ ไม่ได้ล็อกตายตัว
+// 🎯 V3: Deployment Target — automatically sets an appropriate
+// default image size to avoid mismatched settings (e.g. setting 128px
+// while targeting the cloud, or 640px while targeting an ESP32-S3 that
+// simply can't run it). This only sets a *default* — it can still be
+// changed later on the DetectionCapture.jsx page as usual; it's not locked.
 // ==========================================================
 const DEPLOYMENT_TARGETS = [
   // ☁️ Server-side
@@ -57,14 +58,14 @@ const DEPLOYMENT_TARGETS = [
     id: "cloud",
     category: "server",
     label: "☁️ Cloud / Server (API)",
-    desc: "ความแม่นยำสูงสุด รันบนเซิร์ฟเวอร์ที่มี GPU/CPU เหลือเฟือ",
+    desc: "Highest accuracy, runs on a server with ample GPU/CPU",
     defaultSize: 640
   },
   {
     id: "web",
     category: "server",
     label: "🌐 Web Browser (TensorFlow.js)",
-    desc: "รันตรงในเบราว์เซอร์ผู้ใช้เอง ไม่ต้องมี backend server",
+    desc: "Runs directly in the user's browser, no backend server needed",
     defaultSize: 416
   },
 
@@ -73,14 +74,14 @@ const DEPLOYMENT_TARGETS = [
     id: "android",
     category: "mobile",
     label: "📱 Android (TFLite / NCNN)",
-    desc: "แอปมือถือ Android สมดุลความแม่นยำกับความเร็ว/แบตเตอรี่",
+    desc: "Android mobile app, balances accuracy with speed/battery",
     defaultSize: 320
   },
   {
     id: "ios",
     category: "mobile",
     label: "🍎 iOS (Core ML)",
-    desc: "แอปมือถือ iPhone/iPad ใช้ toolchain Core ML ของ Apple",
+    desc: "iPhone/iPad mobile app, uses Apple's Core ML toolchain",
     defaultSize: 320
   },
 
@@ -89,7 +90,7 @@ const DEPLOYMENT_TARGETS = [
     id: "desktop",
     category: "desktop",
     label: "🖥️ Desktop App (Windows/Mac/Linux)",
-    desc: "แอปที่รันบนเครื่อง PC ทั่วไป ผ่าน ONNX Runtime",
+    desc: "App that runs on a regular PC, via ONNX Runtime",
     defaultSize: 640
   },
 
@@ -97,29 +98,29 @@ const DEPLOYMENT_TARGETS = [
   {
     id: "microcontroller",
     category: "embedded",
-    label: "📶 Microcontroller (ESP32 ฯลฯ)",
-    desc: "RAM จำกัดมาก ต้องใช้ขนาดเล็กสุดถึงจะรันได้จริง ไม่ต้องพึ่งอินเทอร์เน็ต",
+    label: "📶 Microcontroller (ESP32, etc.)",
+    desc: "Very limited RAM — needs the smallest size to run at all, no internet required",
     defaultSize: 160
   },
   {
     id: "raspberry_pi",
     category: "embedded",
     label: "🍓 Raspberry Pi / Linux SBC",
-    desc: "แรงกว่า microcontroller มาก รันผ่าน ONNX Runtime บน CPU ARM",
+    desc: "Much more powerful than a microcontroller, runs via ONNX Runtime on ARM CPU",
     defaultSize: 320
   },
   {
     id: "coral_tpu",
     category: "embedded",
     label: "🔌 Edge TPU (Google Coral)",
-    desc: "ชิปเร่งความเร็ว AI โดยเฉพาะ เร็วมากแต่ต้องใช้ TFLite ที่ compile เฉพาะ",
+    desc: "Dedicated AI accelerator chip, very fast but needs a specially compiled TFLite model",
     defaultSize: 300
   },
   {
     id: "jetson",
     category: "embedded",
     label: "🤖 NVIDIA Jetson (Industrial/Robotics)",
-    desc: "บอร์ด GPU สำหรับงานอุตสาหกรรม/หุ่นยนต์ รองรับโมเดลใหญ่ได้เร็ว",
+    desc: "GPU board for industrial/robotics use, supports larger models at speed",
     defaultSize: 640
   }
 ];
@@ -133,8 +134,8 @@ const DEPLOYMENT_CATEGORY_LABELS = {
 
 const DEPLOYMENT_CATEGORY_ORDER = ["server", "mobile", "desktop", "embedded"];
 
-// 🎨 สีแยกตามหมวด ให้เห็นกลุ่มชัดเจนตอนกดเปิด dropdown
-// (ใช้กับทั้ง <option> แต่ละอัน และกล่อง <select> เองตอนแสดงค่าที่เลือกอยู่)
+// 🎨 Colors by category, so groups are clearly visible when the dropdown opens
+// (used for both each <option> and the <select> box itself for the current value)
 const DEPLOYMENT_CATEGORY_COLORS = {
   server: { bg: "#E3F2FD", text: "#0D47A1" },
   mobile: { bg: "#E8F5E9", text: "#1B5E20" },
@@ -142,7 +143,7 @@ const DEPLOYMENT_CATEGORY_COLORS = {
   embedded: { bg: "#FFF3E0", text: "#E65100" }
 };
 
-export default function CreateProject() {
+export default function EnCreateProject() {
   const navigate = useNavigate();
 
   const [projectName, setProjectName] = useState(
@@ -154,15 +155,17 @@ export default function CreateProject() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ==========================================================
-  // 💰 Project Quota: จำนวน project ที่มีอยู่แล้ว เทียบกับเพดานของแผนปัจจุบัน
-  // ดึงจาก 2 endpoint ที่มีอยู่แล้ว:
-  // - /get_user_plan -> ได้ limits.maxProjects (Free=1, Starter/Pro/Business=null=unlimited)
-  // - /get_projects_v2 -> ได้จำนวน project ที่มีอยู่จริงตอนนี้ (data.length)
-  // ไม่พึ่งพา backend ให้ block ฝั่งเดียว เพราะอยากให้ผู้ใช้เห็น quota ก่อนกรอกฟอร์มด้วยซ้ำ
-  // (backend /create_project_v2 ก็ต้องเช็คซ้ำอีกชั้นเพื่อความปลอดภัย ดู comment ฝั่ง app.py)
+  // 💰 Project Quota: number of existing projects compared against
+  // the current plan's limit. Pulled from 2 existing endpoints:
+  // - /get_user_plan -> gives limits.maxProjects (Free=1, Starter/Pro/Business=null=unlimited)
+  // - /get_projects_v2 -> gives the actual current project count (data.length)
+  // Doesn't rely solely on the backend to block, since we want the user to
+  // see the quota even before filling out the form.
+  // (the backend /create_project_v2 still double-checks for safety — see
+  // the comment on the app.py side)
   // ==========================================================
   const [planName, setPlanName] = useState(null);
-  const [maxProjects, setMaxProjects] = useState(null); // null = ยังไม่รู้ / unlimited (เช็คคู่กับ isCheckingQuota)
+  const [maxProjects, setMaxProjects] = useState(null); // null = not known yet / unlimited (check together with isCheckingQuota)
   const [currentProjectCount, setCurrentProjectCount] = useState(null);
   const [isCheckingQuota, setIsCheckingQuota] = useState(true);
 
@@ -197,7 +200,7 @@ export default function CreateProject() {
         if (!cancelled) {
           if (planData.success) {
             setPlanName(planData.plan || "Free");
-            // maxProjects: undefined/null ทั้งคู่ = unlimited (Starter ขึ้นไป)
+            // maxProjects: undefined/null both mean unlimited (Starter and above)
             const limit = planData.limits?.maxProjects;
             setMaxProjects(typeof limit === "number" ? limit : null);
           }
@@ -206,8 +209,9 @@ export default function CreateProject() {
           }
         }
       } catch (err) {
-        // 🆕 fail-open โดยตั้งใจ: ถ้าเช็คไม่ได้ ปล่อยให้สร้าง project ต่อไปได้เลย
-        // (backend /create_project_v2 ยังเช็คซ้ำอีกชั้นอยู่ดี ไม่ให้เกิน quota จริงๆ)
+        // 🆕 Intentionally fail-open: if the check fails, still allow creating
+        // a project (the backend /create_project_v2 still enforces the real
+        // quota either way).
         console.warn("Failed to check project quota (check skipped):", err);
       } finally {
         if (!cancelled) setIsCheckingQuota(false);
@@ -244,12 +248,14 @@ export default function CreateProject() {
   };
 
   const createProject = async () => {
-    // 💰 เช็ค quota ก่อนแม้แต่จะยิง request สร้าง project — กันเสียเวลากรอกฟอร์ม
-    // แล้วมาโดนบล็อกทีหลัง (backend ยังเช็คซ้ำอีกชั้นอยู่ดีเผื่อ frontend เช็คพลาด)
+    // 💰 Check quota before even sending the create request — avoids
+    // wasting time filling out the form only to get blocked later
+    // (the backend still double-checks anyway, in case the frontend check
+    // is wrong).
     if (isOverProjectLimit) {
       setResult(
-        `แผน ${planName} สร้างได้สูงสุด ${maxProjects} โปรเจกต์ (ตอนนี้มี ${currentProjectCount} แล้ว) ` +
-        `กรุณาอัปเกรดแผนเพื่อสร้างโปรเจกต์เพิ่ม`
+        `The ${planName} plan allows up to ${maxProjects} project(s) (you currently have ${currentProjectCount}). ` +
+        `Please upgrade your plan to create more projects.`
       );
       return;
     }
@@ -269,8 +275,9 @@ export default function CreateProject() {
       setIsSubmitting(true);
       setResult("Creating project...");
 
-      // V3: ส่ง deployment_target ไปด้วย (เก็บลง Firestore project doc
-      // เผื่ออนาคตหน้า Train Model จะเอาไปใช้ validate imgsz ตาม target จริง)
+      // V3: also send deployment_target (stored in the Firestore project doc,
+      // in case the future Train Model page needs to validate imgsz against
+      // the actual target).
       const payload = {
         email: localStorage.getItem("email"),
         project: trimmedName,
@@ -291,8 +298,9 @@ export default function CreateProject() {
       if (response.ok && (data.success === true || data.status === "success")) {
         localStorage.setItem("project_name", trimmedName);
 
-        // 🏭 V3: Prefill known classes จาก template ที่เลือก (ถ้ามี)
-        // ใช้ key เดียวกับที่ DetectionCapture.jsx อ่านอยู่แล้ว (known_classes_${project})
+        // 🏭 V3: Prefill known classes from the selected template (if any).
+        // Uses the same key DetectionCapture.jsx already reads
+        // (known_classes_${project}).
         if (selectedTemplate.classes.length > 0) {
           localStorage.setItem(
             `known_classes_${trimmedName}`,
@@ -300,21 +308,23 @@ export default function CreateProject() {
           );
         }
 
-        // 🎯 V3: Prefill ขนาดภาพเริ่มต้นตาม deployment target ที่เลือก
-        // (key เดียวกับที่ DetectionCapture.jsx อ่านอยู่แล้ว: resolution_target_${project})
+        // 🎯 V3: Prefill the default image size based on the selected
+        // deployment target (same key DetectionCapture.jsx already reads:
+        // resolution_target_${project}).
         localStorage.setItem(
           `resolution_target_${trimmedName}`,
           JSON.stringify(selectedDeployment.defaultSize)
         );
 
-        // จำ deployment target ไว้ต่อโปรเจกต์ (ใช้ตอน validate imgsz ที่หน้า
-        // DetectionCapture.jsx / DetSegTrain.jsx ในอนาคต)
+        // Remember the deployment target per project (used to validate
+        // imgsz later on DetectionCapture.jsx / DetSegTrain.jsx).
         localStorage.setItem(`deployment_target_${trimmedName}`, selectedDeployment.id);
 
         navigate("/");
       } else if (response.status === 403 && data.quotaExceeded) {
-        // 💰 backend บล็อกเพราะเกิน maxProjects ของแผน (double-check ฝั่ง server)
-        setResult(data.message || "เกินจำนวนโปรเจกต์สูงสุดของแผนนี้");
+        // 💰 Backend blocked because maxProjects for the plan was exceeded
+        // (server-side double-check).
+        setResult(data.message || "You've reached the maximum number of projects for this plan.");
       } else {
         setResult(data.message || data.error || "Create failed");
       }
@@ -338,7 +348,7 @@ export default function CreateProject() {
 
       <h2>📁 Create Project</h2>
 
-      {/* 💰 การ์ดแสดงโควตาจำนวน project ของแผนปัจจุบัน — โชว์ก่อนกรอกฟอร์มเสมอ */}
+      {/* 💰 Card showing the current plan's project quota — shown before the form always */}
       {!isCheckingQuota && maxProjects != null && (
         <div
           style={{
@@ -352,8 +362,8 @@ export default function CreateProject() {
             color: isOverProjectLimit ? "#a12622" : "#2c5282"
           }}
         >
-          💰 แผน <b>{planName}</b> — มี <b>{currentProjectCount}</b> / {maxProjects} โปรเจกต์
-          {isOverProjectLimit && " — ครบจำนวนสูงสุดแล้ว กรุณาอัปเกรดแผนเพื่อสร้างโปรเจกต์เพิ่ม"}
+          💰 Plan <b>{planName}</b> — you have <b>{currentProjectCount}</b> / {maxProjects} project(s)
+          {isOverProjectLimit && " — Limit reached. Please upgrade your plan to create more projects."}
         </div>
       )}
 
@@ -370,8 +380,8 @@ export default function CreateProject() {
             color: "#2c5282"
           }}
         >
-          💰 แผน <b>{planName}</b> — สร้างโปรเจกต์ได้ไม่จำกัด
-          {currentProjectCount != null && ` (มีอยู่ตอนนี้ ${currentProjectCount} โปรเจกต์)`}
+          💰 Plan <b>{planName}</b> — unlimited projects
+          {currentProjectCount != null && ` (currently have ${currentProjectCount} project(s))`}
         </div>
       )}
 
@@ -395,10 +405,10 @@ export default function CreateProject() {
       </div>
 
       {/* ========================================================
-          🏭 V3: เลือก Template Preset ต่ออุตสาหกรรม
+          🏭 V3: Choose an Industry Template Preset
       ======================================================== */}
       <h4 style={{ marginTop: 25, marginBottom: 10, fontSize: 15, color: "#333" }}>
-        🏭 เลือก Template (ตั้งชื่อคลาสล่วงหน้าให้อัตโนมัติ)
+        🏭 Choose a Template (auto-fills class names)
       </h4>
       <select
         value={selectedTemplateId}
@@ -426,8 +436,8 @@ export default function CreateProject() {
         ))}
       </select>
 
-      {/* 📝 คำอธิบาย + รายชื่อคลาสของ template ที่กำลังเลือกอยู่
-          (แยกจาก <select> เพราะ <option> ใส่คำอธิบายยาวๆ ให้ขึ้นในตัวเลือกไม่ได้) */}
+      {/* 📝 Description + class list of the currently selected template
+          (kept separate from <select> since <option> can't show long descriptions) */}
       {(() => {
         const selectedTemplate = TEMPLATE_PRESETS.find(
           (tpl) => tpl.id === selectedTemplateId
@@ -447,17 +457,17 @@ export default function CreateProject() {
           >
             💡 {selectedTemplate.desc}
             {selectedTemplate.classes.length > 0 && (
-              <> — คลาส: <b>{selectedTemplate.classes.join(", ")}</b></>
+              <> — Classes: <b>{selectedTemplate.classes.join(", ")}</b></>
             )}
           </div>
         );
       })()}
 
       {/* ========================================================
-          🎯 V3: เลือก Deployment Target
+          🎯 V3: Choose a Deployment Target
       ======================================================== */}
       <h4 style={{ marginTop: 25, marginBottom: 10, fontSize: 15, color: "#333" }}>
-        🎯 จะนำโมเดลไปใช้งานที่ไหน (กำหนดขนาดภาพเริ่มต้นให้อัตโนมัติ)
+        🎯 Where will the model be deployed? (auto-sets a default image size)
       </h4>
       <select
         value={selectedDeploymentId}
@@ -496,8 +506,8 @@ export default function CreateProject() {
         ))}
       </select>
 
-      {/* 📝 คำอธิบายของตัวเลือกที่กำลังเลือกอยู่ (แยกจาก <select> เพราะ <option>
-          ใส่คำอธิบายยาวๆ ให้ขึ้นในตัวเลือกไม่ได้) */}
+      {/* 📝 Description of the currently selected option (kept separate from
+          <select> since <option> can't show long descriptions) */}
       {(() => {
         const selectedDeployment = DEPLOYMENT_TARGETS.find(
           (dep) => dep.id === selectedDeploymentId
@@ -515,7 +525,7 @@ export default function CreateProject() {
               lineHeight: 1.6
             }}
           >
-            💡 {selectedDeployment.desc} — ขนาดภาพเริ่มต้น {selectedDeployment.defaultSize}px
+            💡 {selectedDeployment.desc} — default image size {selectedDeployment.defaultSize}px
           </div>
         );
       })()}
@@ -534,7 +544,7 @@ export default function CreateProject() {
         }}
       >
         {isOverProjectLimit
-          ? "🔒 ครบจำนวนโปรเจกต์แล้ว — อัปเกรดแผน"
+          ? "🔒 Project limit reached — Upgrade plan"
           : isSubmitting
           ? "Creating..."
           : "Create Project"}
@@ -547,7 +557,7 @@ export default function CreateProject() {
             result.includes("failed") ||
             result.includes("Invalid") ||
             result.includes("Please") ||
-            result.includes("อัปเกรด")
+            result.includes("upgrade")
               ? "red"
               : "green"
         }}

@@ -3,77 +3,75 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 
 
-// 📖 เนื้อหาคู่มือการใช้งาน annotation tool แต่ละแบบ แยกเป็นหมวดตามเครื่องมือ
+// 📖 Usage guide content for each annotation tool, grouped by tool
 const ANNOTATION_GUIDE_SECTIONS = [
   {
     icon: "🟧",
     title: "Bounding Box",
     items: [
-      "-คลิกแล้วลากกรอบสี่เหลี่ยมครอบตำแหน่งวัตถุที่ต้องการตรวจจับ",
-      "-ลากขอบหรือมุมของกล่องที่วาดไว้แล้วเพื่อปรับขนาด",
-      "-คลิกป้ายชื่อ (label) เพื่อแก้ไขชื่อคลาส",
-      "-Ctrl + ลากป้ายชื่อ: ย้ายเฉพาะตำแหน่งป้าย ไม่กระทบตัวกล่อง"
+      "-Click and drag to draw a rectangle around the object you want to detect",
+      "-Drag an edge or corner of an existing box to resize it",
+      "-Click the label to edit the class name",
+      "-Ctrl + drag the label: moves only the label position, not the box itself"
     ]
   },
   {
     icon: "⬡",
     title: "Polygon",
     items: [
-      "-คลิกเพิ่มจุดขอบเขตวัตถุทีละจุด แล้วคลิกจุดแรกซ้ำ (หรือกดปุ่ม ✅ ปิดรูป) เพื่อปิด Polygon",
-      "-ลากจุดที่วาดไว้แล้วเพื่อปรับตำแหน่งได้",
-      "-คลิกบนเส้นขอบของ Polygon ที่ปิดแล้วเพื่อแทรกจุดใหม่ตรงนั้น",
-      "-ลากพื้นที่ภายในรูป (ไม่ใช่จุด/เส้นขอบ): ย้ายทั้งรูป",
-      "-คลิกขวาที่จุด แล้วลากได้เหมือนคลิกซ้าย",
-      "-วางเมาส์บนจุด แล้วกด 'd': ลบเฉพาะจุดนั้นจุดเดียว",
-      "-กำลังวาด Polygon: กด r ถอยจุดล่าสุด, Esc ยกเลิกทั้งรูป"
+      "-Click to add boundary points one by one, then click the first point again (or press the ✅ Close Shape button) to close the polygon",
+      "-Drag an existing point to reposition it",
+      "-Click on the edge of a closed polygon to insert a new point there",
+      "-Drag inside the shape (not on a point/edge): moves the whole shape",
+      "-Right-click on a point and drag, same as left-click",
+      "-Hover over a point and press 'd': deletes just that one point",
+      "-While drawing a Polygon: press r to undo the last point, Esc to cancel the whole shape"
     ]
   },
   {
     icon: "🔒",
-    title: "Blur (ปิดบังข้อมูลส่วนตัว)",
+    title: "Blur (hide private data)",
     items: [
-      "-คลิกแล้วลากกรอบคลุมส่วนที่ต้องการเบลอ (เช่น ใบหน้าคน, ป้ายทะเบียน, เอกสาร)",
-      "-ตอนกดบันทึก ภาพจริงจะถูกเบลอแบบถาวรลงพิกเซล ไม่สามารถกู้คืนกลับมาดูของเดิมได้อีก",
-      "-เลือกสีกรอบ Blur ได้จาก dropdown ก่อนวาด"
+      "-Click and drag a box over the area you want to blur (e.g. a person's face, license plate, document)",
+      "-When you save, the actual image will be permanently blurred at the pixel level and cannot be recovered",
+      "-Choose the Blur box color from the dropdown before drawing"
     ]
   },
   {
     icon: "🦴",
     title: "Pose / Keypoint",
     items: [
-      "-คลิกวางจุดตามลำดับที่ระบบบอก (จมูก → ตา → หู → ไหล่ → ศอก → ข้อมือ → สะโพก → เข่า → ข้อเท้า)",
-      "-ระบบจะลากเส้นโครงกระดูกเชื่อมจุดให้อัตโนมัติ ครบ 17 จุดจะปิด pose ให้เอง",
-      "-หรือกดปุ่ม ✅ ปิดก่อนครบก็ได้",
-      "-ลากจุดที่วางไว้แล้วเพื่อปรับตำแหน่งได้",
-      "-กด r ถอยจุดล่าสุด, Esc ยกเลิก pose ที่กำลังวาด"
+      "-Click to place points in the order the system indicates (nose → eyes → ears → shoulders → elbows → wrists → hips → knees → ankles)",
+      "-The system automatically draws skeleton lines connecting the points; once all 17 points are placed the pose closes automatically",
+      "-Or press the ✅ button to close before all points are placed",
+      "-Drag an existing point to reposition it",
+      "-Press r to undo the last point, Esc to cancel the pose being drawn"
     ]
   },
   {
     icon: "📍",
     title: "Landmark",
     items: [
-      "-เลือกแบบ (ใบหน้า/มือ) ก่อน แล้วคลิกวางจุดตามลำดับที่ระบบบอก",
-      "-ระบบจะลากเส้นเชื่อมจุดให้อัตโนมัติตาม template ที่เลือก",
-      "-ครบจุดจะปิด landmark อัตโนมัติ (หรือกดปุ่ม ✅ ปิดก่อนครบก็ได้)",
-      "-ลากจุดที่วางไว้แล้วเพื่อปรับตำแหน่งได้",
-      "กด r ถอยจุดล่าสุด, Esc ยกเลิก landmark ที่กำลังวาด"
+      "-Choose a type (face/hand) first, then click to place points in the order the system indicates",
+      "-The system automatically draws connecting lines based on the selected template",
+      "-Once all points are placed the landmark closes automatically (or press the ✅ button to close early)",
+      "-Drag an existing point to reposition it",
+      "Press r to undo the last point, Esc to cancel the landmark being drawn"
     ]
   }
 ];
 
-// ⌨️ คีย์ลัดทั่วไป ใช้ได้ไม่ว่าจะเลือกโหมดไหนอยู่
+// ⌨️ General shortcuts, usable regardless of which mode is selected
 const GENERAL_SHORTCUTS = [
-  "-Ctrl+Z: ย้อนกลับ 1 ขั้นตอนล่าสุด",
-  "-วางเมาส์บนป้าย label แล้ว Ctrl+C / Ctrl+V: คัดลอก/วางกล่องหรือ Polygon",
-  "-คลิกขวาบนกล่อง/Polygon/Blur/Pose/Landmark: ลบทันที",
-  "-Ctrl + หมุนเมาส์บนรูป: ซูมเข้า-ออก",
-  "-ปุ่มกลางเมาส์ค้างแล้วลาก: เลื่อนภาพ (ตอนซูมอยู่)",
-  "-ปุ่มขยายเต็มจอ: ดู/แก้ไข Canvas เต็มหน้าจอ (Esc เพื่อย่อกลับ)",
-  "-🆕 กดเลข 1-9: สลับ \"Active class\" ตามลำดับรายการคลาสที่เพิ่มไว้ (กดซ้ำเลขเดิมเพื่อยกเลิก)",
-  "-🆕 Active class: กล่อง/Polygon/Pose/Landmark ที่วาดใหม่ทุกอันจะได้ label เป็นคลาสนี้ทันที ไม่ต้องพิมพ์แก้ทีหลัง — เลือกได้จากแถบเหนือ Canvas หรือรายการคลาสฝั่งซ้าย"
+  "-Ctrl+Z: undo the most recent step",
+  "-Hover over a label, then Ctrl+C / Ctrl+V: copy/paste a box or polygon",
+  "-Right-click on a box/Polygon/Blur/Pose/Landmark: delete it immediately",
+  "-Ctrl + scroll wheel over the image: zoom in/out",
+  "-Hold the middle mouse button and drag: pan the image (while zoomed)",
+  "-Fullscreen button: view/edit the Canvas fullscreen (Esc to exit)"
 ];
 
-export default function DetectionCapture() {
+export default function EnDetectionCapture() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -89,15 +87,15 @@ const [loadingPlan, setLoadingPlan] = useState(!location.state?.planLimits);
   const initialTotalImages = Number(localStorage.getItem("total_images")) || 0;
   const [totalImagesSaved, setTotalImagesSaved] = useState(initialTotalImages);
 
-  // 🌟 V2: เลือกโหมดวาด Annotation ได้เองต่อวัตถุ ไม่ผูกกับ project_type อีกต่อไป
-  // "bbox" = Bounding Box, "polygon" = Polygon, "blur" = พื้นที่เบลอเพื่อความเป็นส่วนตัว (V3)
-  // "keypoint" = Pose Estimation (โครงกระดูก), "landmark" = Landmark Detection (จุดสำคัญ เช่น หน้า/มือ) (V8)
-  // ภาพเดียวกันมีทั้งหลายแบบปนกันได้ (mixed annotation + privacy blur)
+  // 🌟 V2: Choose the annotation drawing mode per object, no longer tied to project_type
+  // "bbox" = Bounding Box, "polygon" = Polygon, "blur" = area to blur for privacy (V3)
+  // "keypoint" = Pose Estimation (skeleton), "landmark" = Landmark Detection (key points, e.g. face/hand) (V8)
+  // The same image can mix multiple types together (mixed annotation + privacy blur)
   const [annotationMode, setAnnotationMode] = useState("bbox");
-  const isSegmentation = annotationMode === "polygon"; // คงชื่อเดิมไว้ ลดจุดแก้โค้ดด้านล่างที่เหลือ
-  const isBlurMode = annotationMode === "blur"; // 🔒 V3: โหมดวาดพื้นที่เบลอ
-  const isKeypointMode = annotationMode === "keypoint"; // 🦴 V8: โหมด Pose Estimation
-  const isLandmarkMode = annotationMode === "landmark"; // 📍 V8: โหมด Landmark Detection
+  const isSegmentation = annotationMode === "polygon"; // keeping the old name to minimize changes to the rest of the code below
+  const isBlurMode = annotationMode === "blur"; // 🔒 V3: blur area drawing mode
+  const isKeypointMode = annotationMode === "keypoint"; // 🦴 V8: Pose Estimation mode
+  const isLandmarkMode = annotationMode === "landmark"; // 📍 V8: Landmark Detection mode
 
   const pageTitle = "🎯 Object Detection & Segmentation";
   const canvasTitle = isSegmentation
@@ -113,67 +111,67 @@ const [loadingPlan, setLoadingPlan] = useState(!location.state?.planLimits);
   const [capturedImage, setCapturedImage] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
 
-  // ⚠️ เก็บข้อความ error ตอนเปิดกล้อง PC ไม่สำเร็จ (สิทธิ์ถูกปฏิเสธ/ไม่มีกล้อง/กล้องถูกแอปอื่นใช้อยู่/ไม่ใช่ HTTPS ฯลฯ)
+  // ⚠️ Stores the error message when opening the PC camera fails (permission denied/no camera/camera in use by another app/not HTTPS, etc.)
   const [cameraErrorMessage, setCameraErrorMessage] = useState("");
 
   // ==========================================================
-  // 📷 Camera Source: "browser" (PC Camera), "esp32" (ESP32-CAM) หรือ "mobile" (สแกน QR)
+  // 📷 Camera Source: "browser" (PC Camera), "esp32" (ESP32-CAM), or "mobile" (scan QR)
   // ==========================================================
   const [cameraSource, setCameraSource] = useState("browser");
 
-  // ค่าที่ผู้ใช้กำลังพิมพ์ในช่อง IP (ยังไม่ยืนยัน)
+  // The value the user is currently typing into the IP field (not yet confirmed)
    const [esp32IpInput, setEsp32IpInput] = useState(
   localStorage.getItem("camera_url") || "192.168.43.181/stream"
 );
 
-  // ค่า IP ที่ยืนยันแล้วจริง (กด "เชื่อมต่อ" แล้วเท่านั้น) ใช้สร้าง URL stream
+  // The confirmed IP value (only after clicking "Connect") used to build the stream URL
   const [esp32IpConnected, setEsp32IpConnected] = useState(null);
 
-  // สถานะ ESP32: "idle" | "connecting" | "connected" | "error"
+  // ESP32 status: "idle" | "connecting" | "connected" | "error"
   const [esp32Status, setEsp32Status] = useState("idle");
 
-  // ตัวกัน cache ของ browser ตอนต่อ stream ใหม่ (เปลี่ยนค่าเฉพาะตอนกดเชื่อมต่อ ไม่เปลี่ยนทุก render)
+  // Cache-buster for the browser when reconnecting to the stream (only changes when Connect is clicked, not on every render)
   const [esp32StreamKey, setEsp32StreamKey] = useState(0);
 
   const esp32ImgRef = useRef(null);
 
   // ==========================================================
-  // 📱 Mobile Camera (สแกน QR Code): ใช้มือถือของผู้ใช้ที่ล็อกอินอยู่เป็นกล้องถ่ายภาพ
-  // ส่งภาพมาที่ Canvas นี้แบบไร้สาย (ไม่ต้องต่อสาย/ไม่ต้องอยู่วง LAN เดียวกับ ESP32)
+  // 📱 Mobile Camera (scan QR Code): use the logged-in user's phone as the capture device,
+  // sending images to this Canvas wirelessly (no cable needed / no need to be on the same LAN as ESP32)
   //
-  // Flow: ผู้ใช้กด "สร้าง QR Code" -> สร้าง session ผูกกับอีเมลผู้ใช้ที่ login อยู่
-  // -> โชว์ QR ที่ชี้ไปหน้าเว็บกล้องสำหรับมือถือ (route: /mobile-camera?session=...)
-  // -> มือถือสแกนแล้วเปิดกล้อง ส่งเฟรมขึ้น Server ผูกกับ session เดียวกัน
-  // -> หน้านี้ทำการ polling ดึงภาพล่าสุดของ session นั้นมาแสดงในกรอบ Canvas ด้านล่าง
+  // Flow: user clicks "Generate QR Code" -> creates a session tied to the logged-in user's email
+  // -> shows a QR pointing to the mobile camera web page (route: /mobile-camera?session=...)
+  // -> the phone scans it and opens its camera, sending frames to the server tied to the same session
+  // -> this page polls for the latest frame of that session and shows it in the canvas below
   //
-  // ⚠️ ต้องมี endpoint ฝั่ง Server รองรับคู่กัน (ยังไม่ได้รวมอยู่ในไฟล์นี้):
+  // ⚠️ Requires matching backend endpoints (not included in this file):
   //   POST /create_mobile_camera_session  body: { email, project, session_id } -> { session_id }
   //   POST /get_mobile_camera_frame       body: { email, session_id } -> { connected, image_url }
-  //   (image_url = signed Cloud Storage URL อายุสั้น ๆ ที่ backend สร้างให้ ไม่ใช่ base64 ตรง ๆ)
-  // และหน้าเว็บสำหรับมือถือที่ route "/mobile-camera" ซึ่งเปิดกล้องมือถือแล้วอัปโหลดเฟรม
-  // ขึ้น session เดียวกันเป็นระยะ (ยังไม่ได้สร้างในไฟล์นี้เช่นกัน)
+  //   (image_url = a short-lived signed Cloud Storage URL generated by the backend, not raw base64)
+  // And a mobile web page at route "/mobile-camera" which opens the phone's camera and uploads frames
+  // to the same session periodically (also not created in this file)
   // ==========================================================
   const [mobileSessionId, setMobileSessionId] = useState(null);
-  const [mobileQrUrl, setMobileQrUrl] = useState("");           // รูป QR Code (สร้างจาก public QR API)
-  const [mobileCaptureUrl, setMobileCaptureUrl] = useState(""); // URL ที่ QR ชี้ไป (โชว์/copy ให้ผู้ใช้ได้)
+  const [mobileQrUrl, setMobileQrUrl] = useState("");           // QR Code image (generated from a public QR API)
+  const [mobileCaptureUrl, setMobileCaptureUrl] = useState(""); // The URL the QR points to (can be shown/copied to the user)
   const [mobileStatus, setMobileStatus] = useState("idle");     // "idle" | "waiting" | "connected" | "error"
   const mobileImgRef = useRef(null);
   const mobilePollIntervalRef = useRef(null);
-  const MOBILE_POLL_INTERVAL_MS = 800; // ความถี่ในการดึงเฟรมล่าสุดจากมือถือ
+  const MOBILE_POLL_INTERVAL_MS = 800; // how often to fetch the latest frame from the phone
 
   // ==========================================================
-  // 🎯 ขนาดภาพเป้าหมาย (px) — ผู้ใช้กำหนดเป็นตัวเลขตรงๆ ไม่มี preset/คำอธิบาย
-  // ใช้ resize ภาพลงก่อนบันทึกทุกครั้ง (ด้านที่ยาวที่สุด คงสัดส่วนเดิมไว้)
-  // ค่านี้จะถูกส่งไปเป็น imgsz ตอนเทรน (อ่านจาก localStorage เดียวกันที่หน้า
-  // Train Model) — backend ไม่คำนวณ imgsz เองจากขนาดภาพในระบบอีกต่อไป
+  // 🎯 Target image size (px) — the user enters a raw number, no preset/description
+  // Used to resize the image down before every save (longest side, keeping the original aspect ratio)
+  // This value is sent as imgsz when training (read from the same localStorage used on the
+  // Train Model page) — the backend no longer calculates imgsz itself from the stored image size
   // ==========================================================
   const DEFAULT_TARGET_IMAGE_SIZE = 640;
   const MIN_TARGET_IMAGE_SIZE = 32;
   const MAX_TARGET_IMAGE_SIZE = 1280;
 
-  // 🆕💾 จำค่าที่เคยตั้งไว้ต่อโปรเจกต์ (เก็บใน localStorage แบบเดียวกับ
-  // KNOWN_CLASSES_KEY ด้านล่าง) — เปิดโปรเจกต์เดิมกลับมาแล้วต้องเห็นค่าที่
-  // ตั้งไว้ล่าสุดทันที ไม่ต้องตั้งใหม่ทุกครั้งที่เข้าหน้านี้
+  // 🆕💾 Remember the value previously set per project (stored in localStorage the same way
+  // as KNOWN_CLASSES_KEY below) — reopening the same project should immediately show the
+  // last value set, without having to set it again every time this page is opened
   const RESOLUTION_TARGET_KEY = `resolution_target_${project}`;
 
   const loadSavedTargetImageSize = () => {
@@ -181,14 +179,14 @@ const [loadingPlan, setLoadingPlan] = useState(!location.state?.planLimits);
       const saved = Number(JSON.parse(localStorage.getItem(RESOLUTION_TARGET_KEY) || "null"));
       if (Number.isFinite(saved) && saved > 0) return Math.round(saved);
     } catch {
-      // เผื่อค่าที่เก็บไว้เพี้ยน/parse ไม่ได้ -> fallback ค่าเริ่มต้นด้านล่าง
+      // In case the saved value is corrupted/unparsable -> fall back to the default below
     }
     return DEFAULT_TARGET_IMAGE_SIZE;
   };
 
   const [targetImageSize, setTargetImageSize] = useState(() => loadSavedTargetImageSize());
 
-  // บันทึกค่าลง localStorage ทุกครั้งที่ผู้ใช้เปลี่ยนตัวเลข (ผูกกับ project ปัจจุบันเสมอ)
+  // Save to localStorage every time the user changes the number (always tied to the current project)
   useEffect(() => {
     try {
       localStorage.setItem(RESOLUTION_TARGET_KEY, JSON.stringify(targetImageSize));
@@ -199,7 +197,7 @@ const [loadingPlan, setLoadingPlan] = useState(!location.state?.planLimits);
   }, [targetImageSize]);
 
   useEffect(() => {
-  if (location.state?.planLimits) return; // มี state แล้ว ไม่ต้องยิงซ้ำ
+  if (location.state?.planLimits) return; // already have state, no need to fetch again
 
   const serverUrl = localStorage.getItem("cloud_url");
   const email = localStorage.getItem("email");
@@ -231,53 +229,53 @@ const [loadingPlan, setLoadingPlan] = useState(!location.state?.planLimits);
 }, []);
 
 
-  // ขนาดด้านยาวที่สุดที่จะใช้ resize ภาพจริง ณ ตอนนี้ (clamp กันค่าหลุดขอบเขต)
+  // The longest-side size currently used to resize the actual image (clamped to keep within bounds)
   const getActiveMaxDimension = () => {
     const n = Number(targetImageSize);
     if (!Number.isFinite(n) || n <= 0) return DEFAULT_TARGET_IMAGE_SIZE;
     return Math.max(MIN_TARGET_IMAGE_SIZE, Math.min(MAX_TARGET_IMAGE_SIZE, Math.round(n)));
   };
 
-  // States สำหรับระบบ Bounding Box (โหมด Detection)
+  // States for the Bounding Box system (Detection mode)
   const [boxes, setBoxes] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [currentBox, setCurrentBox] = useState(null);
 
-  // 🎯 ระบบ resize / move กล่องที่วาดไว้แล้ว (โหมด Detection)
-  // editingHandle เก็บว่ากำลังลากขอบ/มุมกล่องไหนอยู่ (null = ไม่ได้ลาก)
+  // 🎯 Resize / move system for already-drawn boxes (Detection mode)
+  // editingHandle stores which edge/corner of which box is currently being dragged (null = not dragging)
   const [editingHandle, setEditingHandle] = useState(null); // { boxId, type, startPos, original }
-  const [hoverCursor, setHoverCursor] = useState(null); // cursor ที่ควรโชว์ตอนเมาส์แขวนอยู่บนขอบ/มุม (ไม่ได้ลาก)
-  const HANDLE_TOLERANCE = 8; // px ระยะที่ถือว่าเมาส์ "แขวนอยู่บนเส้น/มุม"
-  const MIN_BOX_SIZE = 5; // px ขนาดกล่องเล็กสุดที่ยอมให้ resize เหลือ
+  const [hoverCursor, setHoverCursor] = useState(null); // cursor to show while hovering an edge/corner (not dragging)
+  const HANDLE_TOLERANCE = 8; // px distance considered "hovering on the line/corner"
+  const MIN_BOX_SIZE = 5; // px minimum box size allowed when resizing
 
-  // States สำหรับระบบ Polygon (โหมด Segmentation)
+  // States for the Polygon system (Segmentation mode)
   const [polygons, setPolygons] = useState([]);
   const [currentPolygonPoints, setCurrentPolygonPoints] = useState([]);
   const [hoverPoint, setHoverPoint] = useState(null);
-  const CLOSE_POLYGON_RADIUS = 12; // ระยะ (px) ที่คลิกใกล้จุดแรกพอจะถือว่าปิดรูป
+  const CLOSE_POLYGON_RADIUS = 12; // distance (px) close enough to the first point to count as closing the shape
 
-  // ⚫ ระบบลากย้ายจุด (vertex) ของ Polygon ที่วาดเสร็จแล้ว (โหมด Segmentation)
+  // ⚫ System for dragging a vertex of an already-drawn Polygon (Segmentation mode)
   const [draggingVertex, setDraggingVertex] = useState(null); // { polygonId, pointIndex }
-  const VERTEX_HIT_RADIUS = 8; // px ระยะที่ถือว่าเมาส์ "แขวนอยู่บนจุด"
-  const suppressNextClickRef = useRef(false); // กันไม่ให้ click ต่อท้ายการลากจุดไปเพิ่มจุดใหม่ซ้อน
+  const VERTEX_HIT_RADIUS = 8; // px distance considered "hovering on the point"
+  const suppressNextClickRef = useRef(false); // prevents the click after dragging a point from adding a new point on top of it
 
 
-// 🆕 ติดตามว่าตอนนี้เมาส์ hover อยู่บนจุด (vertex) ของ Polygon ตัวไหน จุดที่เท่าไหร่
-// ใช้คู่กับปุ่ม 'd' บนคีย์บอร์ด เพื่อลบจุดนั้นตัวเดียว (ไม่ลบทั้งรูป)
+// 🆕 Tracks which vertex of which Polygon the mouse is currently hovering over
+// Used together with the 'd' key to delete only that one point (not the whole shape)
 const hoveredPolygonVertexRef = useRef(null); // { polygonId, pointIndex } | null
 
-// 🆕 กันไม่ให้ contextmenu (คลิกขวา) ไปลบทั้งรูปทิ้ง ถ้าเพิ่งใช้คลิกขวาลากจุดไปแล้ว
+// 🆕 Prevents the contextmenu (right-click) from deleting the whole shape if it was just used to drag a point
 const isRightDragRef = useRef(false);
 
-  // 🏷️ แก้ label ตรงจุดที่วาด (คลิกป้ายชื่อบนกล่อง/polygon เพื่อแก้ไขได้ทันที)
+  // 🏷️ Edit the label right where it was drawn (click the label on a box/polygon to edit immediately)
   const [editingBoxLabelId, setEditingBoxLabelId] = useState(null);
   const [editingPolygonLabelId, setEditingPolygonLabelId] = useState(null);
 
   // ==========================================================
-  // 🔒 V3: ระบบ Blur พื้นที่ส่วนตัว (หน้าคน, ป้ายทะเบียน, เอกสาร ฯลฯ)
-  // เก็บเป็น { id, x, y, w, h, color } เหมือน box แต่ไม่มี label/class เพราะไม่ใช่ annotation
-  // สำหรับเทรนโมเดล เป็นแค่พื้นที่ที่จะ "เบลอถาวรลงพิกเซลจริง" ก่อนอัปโหลดเท่านั้น
+  // 🔒 V3: Blur system for private areas (faces, license plates, documents, etc.)
+  // Stored as { id, x, y, w, h, color } like a box, but without a label/class since it's not
+  // an annotation for model training — just an area that will be "permanently blurred to actual pixels" before upload
   // ==========================================================
   const [blurRegions, setBlurRegions] = useState([]);
   const [isDrawingBlur, setIsDrawingBlur] = useState(false);
@@ -285,10 +283,10 @@ const isRightDragRef = useRef(false);
   const [currentBlurBox, setCurrentBlurBox] = useState(null);
 
   // ==========================================================
-  // 🦴 V8: ระบบ Keypoint Detection / Pose Estimation
-  // เก็บเป็น pose ทั้งตัว { id, label, colorOverride, keypoints: [{x,y,name,visible}] }
-  // ผู้ใช้คลิกวางจุดทีละจุดตามลำดับ template (COCO 17 keypoints) เส้นเชื่อม
-  // (skeleton) คำนวณจาก POSE_CONNECTIONS ด้านล่าง — วาดครบทุกจุดแล้ว auto ปิด pose ให้เอง
+  // 🦴 V8: Keypoint Detection / Pose Estimation system
+  // Stored as a whole pose { id, label, colorOverride, keypoints: [{x,y,name,visible}] }
+  // The user clicks to place points one by one in template order (COCO 17 keypoints); the connecting
+  // lines (skeleton) are computed from POSE_CONNECTIONS below — once all points are drawn the pose closes automatically
   // ==========================================================
   const POSE_TEMPLATE = {
     names: [
@@ -297,7 +295,7 @@ const isRightDragRef = useRef(false);
       "left_wrist", "right_wrist", "left_hip", "right_hip",
       "left_knee", "right_knee", "left_ankle", "right_ankle"
     ],
-    // คู่ index ของจุดที่ต้องลากเส้นเชื่อมกัน (ตามมาตรฐาน COCO-17 skeleton)
+    // Index pairs of points that need connecting lines (following the COCO-17 skeleton standard)
     connections: [
       [0, 1], [0, 2], [1, 3], [2, 4],
       [0, 5], [0, 6], [5, 6],
@@ -310,23 +308,23 @@ const isRightDragRef = useRef(false);
   const POSE_LINE_COLOR = "#0EA5E9";
 
   const [poses, setPoses] = useState([]);
-  const [currentPoseKeypoints, setCurrentPoseKeypoints] = useState([]); // จุดที่วางไปแล้วของ pose ที่กำลังวาดอยู่
+  const [currentPoseKeypoints, setCurrentPoseKeypoints] = useState([]); // points already placed for the pose currently being drawn
   const [draggingPoseVertex, setDraggingPoseVertex] = useState(null); // { poseId, pointIndex }
   const [editingPoseLabelId, setEditingPoseLabelId] = useState(null);
   const POSE_VERTEX_HIT_RADIUS = 8;
 
   // ==========================================================
-  // 📍 V8: ระบบ Keypoint / Landmark Detection (ทั่วไป ไม่จำกัดแค่ร่างกายคน)
-  // เลือก template ได้ (ใบหน้า / มือ) แต่ละแบบมีจำนวนจุด + เส้นเชื่อมของตัวเอง
+  // 📍 V8: Keypoint / Landmark Detection system (general, not limited to a human body)
+  // A template (face / hand) can be selected, each with its own point count + connecting lines
   // ==========================================================
   const LANDMARK_TEMPLATES = {
     face: {
-      label: "😊 ใบหน้า (5 จุด)",
+      label: "😊 Face (5 points)",
       names: ["left_eye", "right_eye", "nose_tip", "left_mouth", "right_mouth"],
       connections: [[0, 2], [1, 2], [2, 3], [2, 4], [3, 4]]
     },
     hand: {
-      label: "✋ มือ (21 จุด)",
+      label: "✋ Hand (21 points)",
       names: [
         "wrist",
         "thumb_cmc", "thumb_mcp", "thumb_ip", "thumb_tip",
@@ -357,27 +355,27 @@ const isRightDragRef = useRef(false);
   const LANDMARK_VERTEX_HIT_RADIUS = 8;
 
   // ==========================================================
-  // 🎨 V5: รายการสีให้เลือกเองผ่าน dropdown (ใช้ตอนนี้กับ Blur ก่อน
-  // แต่ตั้งใจออกแบบให้เป็น constant แยกต่างหาก เผื่ออนาคตขยายไปใช้กับ
-  // Bounding Box / Polygon ได้ง่ายๆ โดยไม่ต้องผูกกับ getColorForLabel เดิม)
-  // แต่ละ option มี emoji สี่เหลี่ยมสีนำหน้า เพื่อให้เห็นสีคร่าวๆ ใน <select> ได้
-  // แม้เบราว์เซอร์จะไม่ยอมให้ใส่สีพื้นหลังจริงลงใน <option> ก็ตาม
+  // 🎨 V5: List of selectable colors via dropdown (currently used for Blur only,
+  // but intentionally designed as a separate constant so it can be easily extended to
+  // Bounding Box / Polygon in the future without tying to the existing getColorForLabel)
+  // Each option is prefixed with a colored-square emoji, to give a rough color hint in the
+  // <select>, since browsers won't let a real background color be applied to an <option>
   // ==========================================================
   const COLOR_PICKER_OPTIONS = [
-    { value: "#7C3AED", label: "🟣 ม่วง (ค่าเริ่มต้น)" },
-    { value: "#EF4444", label: "🔴 แดง" },
-    { value: "#F97316", label: "🟠 ส้ม" },
-    { value: "#F59E0B", label: "🟡 เหลือง" },
-    { value: "#10B981", label: "🟢 เขียว" },
-    { value: "#14B8A6", label: "🟢 เขียวอมฟ้า" },
-    { value: "#0078D7", label: "🔵 ฟ้า" },
-    { value: "#6366F1", label: "🔵 อินดิโก้" },
-    { value: "#EC4899", label: "🌸 ชมพู" },
-    { value: "#374151", label: "⚫ เทาเข้ม" },
+    { value: "#7C3AED", label: "🟣 Purple (default)" },
+    { value: "#EF4444", label: "🔴 Red" },
+    { value: "#F97316", label: "🟠 Orange" },
+    { value: "#F59E0B", label: "🟡 Yellow" },
+    { value: "#10B981", label: "🟢 Green" },
+    { value: "#14B8A6", label: "🟢 Teal" },
+    { value: "#0078D7", label: "🔵 Blue" },
+    { value: "#6366F1", label: "🔵 Indigo" },
+    { value: "#EC4899", label: "🌸 Pink" },
+    { value: "#374151", label: "⚫ Dark Gray" },
   ];
   const DEFAULT_BLUR_COLOR = "#7C3AED";
 
-  // 🆕💾 จำสี Blur ที่เคยเลือกไว้ต่อโปรเจกต์ (เก็บ pattern เดียวกับ RESOLUTION_TARGET_KEY ด้านล่าง)
+  // 🆕💾 Remember the previously chosen Blur color per project (same pattern as RESOLUTION_TARGET_KEY below)
   const BLUR_COLOR_KEY = `blur_color_${project}`;
 
   const loadSavedBlurColor = () => {
@@ -385,12 +383,12 @@ const isRightDragRef = useRef(false);
       const saved = localStorage.getItem(BLUR_COLOR_KEY);
       if (saved && COLOR_PICKER_OPTIONS.some(c => c.value === saved)) return saved;
     } catch {
-      // เผื่อค่าที่เก็บไว้เพี้ยน -> fallback ค่าเริ่มต้นด้านล่าง
+      // In case the saved value is corrupted -> fall back to the default below
     }
     return DEFAULT_BLUR_COLOR;
   };
 
-  // สีที่จะใช้กับพื้นที่ Blur "ชิ้นถัดไป" ที่วาด (ของเดิมที่วาดไว้แล้วไม่เปลี่ยนสีตาม)
+  // Color to use for the "next" blur region drawn (existing ones don't change color to match)
   const [blurColor, setBlurColor] = useState(() => loadSavedBlurColor());
 
   useEffect(() => {
@@ -402,7 +400,7 @@ const isRightDragRef = useRef(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blurColor]);
 
-  // แปลง hex color -> "r, g, b" string ใช้ทำพื้นหลังโปร่งแสงของกรอบ Blur ตามสีที่เลือก
+  // Convert hex color -> "r, g, b" string, used for the translucent background of the Blur box based on the selected color
   const hexToRgbStringForBlur = (hex) => {
     const clean = (hex || DEFAULT_BLUR_COLOR).replace("#", "");
     const r = parseInt(clean.substring(0, 2), 16);
@@ -412,16 +410,16 @@ const isRightDragRef = useRef(false);
   };
 
   // ==========================================================
-  // 🎨 V6: dropdown เลือกสีเองให้ Bounding Box และ Polygon เช่นเดียวกับ Blur
-  // ต่างจาก Blur ตรงที่ box/polygon มีระบบสีอัตโนมัติตาม label อยู่แล้ว
-  // (getColorForLabel) ดังนั้น dropdown นี้มีตัวเลือกพิเศษ "อัตโนมัติ" เป็นค่า
-  // เริ่มต้นเสมอ — ถ้าผู้ใช้เลือกสีเจาะจงเอง สีนั้นจะถูกจำไว้ที่ "ชิ้นนั้น"
-  // ตอนวาดเสร็จ (เก็บใน box.colorOverride / poly.colorOverride) ไม่ผูกกับ label
-  // ของเก่าที่วาดไว้ก่อนหน้าไม่เปลี่ยนสีตามการสลับ dropdown ทีหลัง
+  // 🎨 V6: color-selection dropdown for Bounding Box and Polygon, same as Blur
+  // Unlike Blur, boxes/polygons already have an automatic color-by-label system
+  // (getColorForLabel), so this dropdown always has a special "Automatic" option as the
+  // default — if the user picks a specific color, that color is remembered for "that shape"
+  // once drawing finishes (stored in box.colorOverride / poly.colorOverride) and is not tied
+  // to the label — older shapes drawn before don't change color when the dropdown is switched later
   // ==========================================================
   const AUTO_COLOR_VALUE = "auto";
   const SHAPE_COLOR_OPTIONS = [
-    { value: AUTO_COLOR_VALUE, label: "🎨 อัตโนมัติ (ตามชื่อ label)" },
+    { value: AUTO_COLOR_VALUE, label: "🎨 Automatic (based on label name)" },
     ...COLOR_PICKER_OPTIONS
   ];
 
@@ -435,12 +433,12 @@ const isRightDragRef = useRef(false);
       const saved = localStorage.getItem(key);
       if (saved === AUTO_COLOR_VALUE || COLOR_PICKER_OPTIONS.some(c => c.value === saved)) return saved;
     } catch {
-      // เผื่อค่าที่เก็บไว้เพี้ยน -> fallback ค่าเริ่มต้นด้านล่าง
+      // In case the saved value is corrupted -> fall back to the default below
     }
     return AUTO_COLOR_VALUE;
   };
 
-  // สีที่จะใช้กับ Bounding Box / Polygon / Pose / Landmark "ชิ้นถัดไป" ที่วาด — ค่าเริ่มต้นคือ "auto" (ใช้สีตาม label เดิม)
+  // Color to use for the "next" Bounding Box / Polygon / Pose / Landmark drawn — defaults to "auto" (uses the color based on the label)
   const [boxColorChoice, setBoxColorChoice] = useState(() => loadSavedShapeColor(BOX_COLOR_KEY));
   const [polygonColorChoice, setPolygonColorChoice] = useState(() => loadSavedShapeColor(POLYGON_COLOR_KEY));
   const [poseColorChoice, setPoseColorChoice] = useState(() => loadSavedShapeColor(POSE_COLOR_KEY));
@@ -482,51 +480,53 @@ const isRightDragRef = useRef(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [landmarkColorChoice]);
 
-  // 🔍 ระบบซูม Canvas ด้วย Ctrl + หมุนเมาส์ (ช่วยวาด/แก้ Bounding Box กับ Polygon ได้ละเอียดขึ้น)
+  // 🔍 Canvas zoom system with Ctrl + scroll (helps draw/edit Bounding Box and Polygon in more detail)
   const [zoomLevel, setZoomLevel] = useState(1);
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 4;
 
-  // ✋ ระบบเลื่อนภาพ (Pan) ด้วยการกดเมาส์ปุ่มกลางค้างแล้วลาก - ใช้ตอนซูมเข้าดูรายละเอียด
-  // (จงใจใช้ปุ่มกลางแทนปุ่มซ้าย เพื่อไม่ให้ชนกับการวาดกล่อง/จุด polygon ที่ใช้ปุ่มซ้ายอยู่แล้ว)
+  // ✋ Pan system by holding the middle mouse button and dragging — used while zoomed in to see detail
+  // (deliberately uses the middle button instead of left, so it doesn't conflict with drawing
+  // boxes/polygon points which already use the left button)
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const panStartRef = useRef({ mouseX: 0, mouseY: 0, offsetX: 0, offsetY: 0 });
 
-  // โหมด Augmentation ส่งไปให้ Backend ประมวลผล
+  // Augmentation mode sent to the backend for processing
   const [augMode, setAugMode] = useState("original");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 🆕📋 Copy/Paste ด้วย Ctrl+C / Ctrl+V ตอนเมาส์อยู่บนป้าย label ของกล่อง/polygon
+  // 🆕📋 Copy/Paste with Ctrl+C / Ctrl+V while the mouse is over a box/polygon label
   const hoveredLabelRef = useRef(null); // { type: "box" | "polygon", id }
   const clipboardRef = useRef(null); // { type: "box" | "polygon", data }
 
-  // 🆕✋ Ctrl+ลากที่ป้าย label -> ย้ายเฉพาะตำแหน่งป้าย (ไม่กระทบกล่อง/รูปที่วาดไว้เลย)
-  // เก็บเป็น offset (dx, dy) จากตำแหน่ง default ของป้ายแต่ละอัน
+  // 🆕✋ Ctrl+drag on the label -> moves only the label position (doesn't affect the box/shape at all)
+  // Stored as an offset (dx, dy) from each label's default position
   const [draggingBoxLabel, setDraggingBoxLabel] = useState(null); // { boxId, startPos, originalOffset }
   const [draggingPolygonLabelState, setDraggingPolygonLabelState] = useState(null); // { polygonId, startPos, originalOffset }
 
-  // กัน onClick เปิดโหมดแก้ชื่อซ้อนหลังลากป้ายเสร็จ
+  // Prevents onClick from re-entering rename mode right after finishing a label drag
   const suppressLabelClickRef = useRef(false);
 
-  // 🆕⬡ ระยะ (px) ที่คลิกใกล้เส้นขอบ polygon พอจะถือว่า "แทรกจุดใหม่ตรงนี้"
+  // 🆕⬡ Distance (px) close enough to a polygon edge to count as "insert a new point here"
   const EDGE_INSERT_TOLERANCE = 8;
 
-  // 🆕✋ ลากย้าย Polygon ทั้งรูปพร้อมกัน (คลิกค้างตรงพื้นที่ภายในรูป ไม่ใช่จุด ไม่ใช่เส้นขอบ)
+  // 🆕✋ Drag an entire Polygon at once (click-and-hold inside the shape's area, not on a point, not on an edge)
   const [draggingPolygonMove, setDraggingPolygonMove] = useState(null); // { polygonId, startPos, originalPoints }
 
-  // 🆕📐 ขนาดจริง (naturalWidth/naturalHeight) ของรูปที่ถ่าย/อัปโหลดมา
-  // จำเป็นต้องรู้ค่านี้เพื่อคำนวณว่า "รูปจริงแสดงอยู่ตรงไหนของ container" (เพราะใช้ objectFit: contain
-  // ซึ่งมักมีขอบว่าง/letterbox รอบรูปเวลาสัดส่วน container ไม่ตรงกับสัดส่วนรูป) — ใช้แก้บั๊ก
-  // rescale พิกัดกล่อง/polygon ตอนสลับขยายเต็มจอ/ย่อกลับให้แม่นยำขึ้น
+  // 🆕📐 The actual size (naturalWidth/naturalHeight) of the captured/uploaded image
+  // Need to know this to calculate "where the actual image is displayed within the container"
+  // (since objectFit: contain is used, which often leaves empty margins/letterboxing around the
+  // image when the container's aspect ratio doesn't match the image's) — used to fix a bug in
+  // rescaling box/polygon coordinates for greater accuracy when toggling fullscreen/back
   const [imgNaturalSize, setImgNaturalSize] = useState({ width: 0, height: 0 });
 
-  // 🆕🖥️ ระบบขยาย Canvas เต็มจอ (ช่วยวาด/แก้ Bounding Box กับ Polygon ได้แม่นยำขึ้นบนจอเล็ก)
-  // ใช้ CSS-based fullscreen (fixed คลุมทั้งจอ) แทน Fullscreen API ของเบราว์เซอร์
-  // เพราะทำงานได้แน่นอนกว่าไม่ว่าจะรันใน iframe/webview หรือเบราว์เซอร์ปกติก็ตาม
+  // 🆕🖥️ Fullscreen Canvas system (helps draw/edit Bounding Box and Polygon more precisely on small screens)
+  // Uses CSS-based fullscreen (fixed covering the whole screen) instead of the browser's
+  // Fullscreen API, because it works more reliably whether running in an iframe/webview or a normal browser
   const [isCanvasFullscreen, setIsCanvasFullscreen] = useState(false);
 
-  // 🆕 popup คู่มือการใช้ annotation tool แต่ละแบบ
+  // 🆕 popup: usage guide for each annotation tool
 const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(
     typeof window !== "undefined" ? window.innerHeight : 800
@@ -538,10 +538,10 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ความสูงของ canvas: ปกติคงที่ 380px, ตอนเต็มจอขยายตามความสูงหน้าจอจริง (เผื่อพื้นที่ให้ปุ่ม/แถบควบคุมด้านบน-ล่าง)
+  // Canvas height: normally a fixed 380px; expands to fill the actual screen height when fullscreen (leaving room for buttons/toolbars above and below)
   const CANVAS_HEIGHT = isCanvasFullscreen ? Math.max(400, viewportHeight - 260) : 380;
 
-  // สลับ Fullscreen: ล็อกการเลื่อนหน้าเว็บด้านหลังไว้ตอนเปิดเต็มจอ กันเลื่อนเพี้ยน
+  // Toggle Fullscreen: locks scrolling on the page behind it while fullscreen is open, to prevent scroll glitches
   useEffect(() => {
     if (isCanvasFullscreen) {
       const prevOverflow = document.body.style.overflow;
@@ -560,16 +560,16 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
 }
 
   // ==========================================================
-  // 🖼️📐 Resize รูปลงเหลือ maxDimension (ด้านที่ยาวที่สุด) คงสัดส่วนเดิมไว้
-  // ใช้ทั้งตอนถ่ายภาพสด (captureSnapshot) และตอนอัปโหลดไฟล์ภายนอก
-  // (ไฟล์จากมือถือ/กล้องมักมีขนาดใหญ่กว่า target มาก เช่น 4000x3000)
+  // 🖼️📐 Resize the image down to maxDimension (longest side), keeping the original aspect ratio
+  // Used both when capturing a live snapshot (captureSnapshot) and when uploading an external file
+  // (files from phones/cameras are often much larger than the target, e.g. 4000x3000)
   //
-  // ทำงานผ่าน canvas วาดภาพต้นฉบับลงไปที่ขนาดใหม่โดยตรง แล้ว toDataURL ออกมา
-  // ไม่ resize ทีหลังจากที่ผู้ใช้วาด annotation ไปแล้ว เพราะพิกัดกล่อง/polygon
-  // ที่เก็บไว้อ้างอิงกับพื้นที่แสดงผลของ container (คำนวณจาก naturalWidth/
-  // naturalHeight ของภาพที่ backend ถอดรหัสได้จริง) — resize ก่อนวาด annotation
-  // เสมอ ทำให้ img_w/img_h ที่ backend เห็นตรงกับภาพที่ผู้ใช้วาดจริงเป๊ะๆ
-  // ไม่ต้องคำนวณ rescale เพิ่มเติมที่ฝั่ง frontend หรือ backend เลย
+  // Works by drawing the original image directly to canvas at the new size, then extracting a
+  // toDataURL. Never resized after the user has already drawn annotations, because the stored
+  // box/polygon coordinates reference the container's display area (calculated from the
+  // naturalWidth/naturalHeight the backend actually decodes) — always resizing before drawing
+  // annotations means the img_w/img_h the backend sees exactly matches what the user actually
+  // drew, with no need for extra rescale calculations on either the frontend or backend
   // ==========================================================
   const resizeImageSource = (source, naturalW, naturalH, maxDimension) => {
     let targetW = naturalW;
@@ -598,19 +598,19 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
     };
   };
 
-  // 🆕✅ ตอนนี้กดบันทึกครั้งเดียว -> Server สร้างครบทั้ง 12 แบบให้เองอัตโนมัติ
-  // (ไม่ต้องเช็คทีละโหมดแบบเดิมแล้ว เพราะไม่มีแนวคิด "บันทึกทีละโหมด" อีกต่อไป)
+  // 🆕✅ Now, clicking save once -> the server automatically generates all 12 variants for you
+  // (no more need to check mode-by-mode like before, since "save one mode at a time" no longer exists)
   const [allModesSaved, setAllModesSaved] = useState(false);
 
-  // 🆕🖼️ แกลเลอรีภาพที่บันทึกแล้วจริงในโปรเจกต์นี้ (ดึงจาก /list_project_images_v2)
-  // มาแทนแผงพรีวิว Augmentation แบบเดิม เพราะตอนนี้บันทึกครบ 12 แบบทีเดียวอยู่แล้ว
-  // ไม่จำเป็นต้องเลือกโหมดก่อนบันทึกอีกต่อไป
+  // 🆕🖼️ Gallery of images actually saved in this project (fetched from /list_project_images_v2)
+  // replaces the old Augmentation preview panel, since all 12 variants are now saved at once,
+  // there's no longer a need to select a mode before saving
   const [projectGallery, setProjectGallery] = useState([]);
   const [loadingGallery, setLoadingGallery] = useState(false);
 
-  // 🆕🏷️ รายชื่อคลาสที่เคยตั้งไว้แล้วในโปรเจกต์นี้ (เก็บถาวรไว้ใน localStorage ต่อ project)
-  // ใช้ทำ autocomplete ตอนตั้งชื่อ label ของ Bounding Box / Polygon กันตั้งชื่อคลาดเคลื่อน
-  // (เช่น พิมพ์ "ฝาสีเหลือง" ในภาพหนึ่ง แล้วพิมพ์ผิดเป็น "ฝาเสีหลือง" ในอีกภาพ)
+  // 🆕🏷️ List of class names previously set in this project (persisted in localStorage per project)
+  // Used for autocomplete when naming Bounding Box / Polygon labels, to prevent inconsistent
+  // naming (e.g. typing "yellow_cap" in one image, then mistyping "yelow_cap" in another)
   const KNOWN_CLASSES_KEY = `known_classes_${project}`;
   const [knownClasses, setKnownClasses] = useState(() => {
     try {
@@ -621,7 +621,7 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
     }
   });
 
-  // บันทึกชื่อคลาสใหม่เข้ารายการ (ถ้ายังไม่เคยมี) ทุกครั้งที่ผู้ใช้ยืนยันการตั้ง/แก้ label เสร็จ
+  // Register a new class name into the list (if not already present) every time the user confirms setting/editing a label
   const registerClassName = (name) => {
     const trimmed = (name || "").trim();
     if (!trimmed) return;
@@ -637,8 +637,8 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
     });
   };
 
-  // 🆕 ช่องกรอกชื่อคลาสล่วงหน้าในการ์ด "Input Source" (ฝั่งซ้าย)
-  // ชื่อที่เพิ่มตรงนี้จะไปโผล่เป็นตัวเลือกอัตโนมัติทุกจุดที่ตั้ง/แก้ label ของ Bounding Box หรือ Polygon
+  // 🆕 Input field to pre-add class names in the "Input Source" card (left side)
+  // Names added here will appear as autocomplete suggestions anywhere a Bounding Box or Polygon label is set/edited
   const [newClassInput, setNewClassInput] = useState("");
 
   const addKnownClassFromInput = () => {
@@ -646,7 +646,7 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
     setNewClassInput("");
   };
 
-  // ลบชื่อคลาสออกจากรายการที่แนะนำ (เช่น เผลอพิมพ์ผิดตอนเพิ่ม)
+  // Remove a class name from the suggested list (e.g. accidentally mistyped it when adding)
   const removeKnownClass = (name) => {
     setKnownClasses(prev => {
       const updated = prev.filter(c => c !== name);
@@ -657,93 +657,20 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
       }
       return updated;
     });
-    // ถ้าลบคลาสที่กำลัง active อยู่ ให้เคลียร์ active class ทิ้งด้วย กันชี้ไปคลาสที่ไม่มีแล้ว
-    setActiveClassState(prev => {
-      if (prev !== name) return prev;
-      try {
-        localStorage.setItem(ACTIVE_CLASS_KEY, "");
-      } catch (err) {
-        console.error("Save active class failed:", err);
-      }
-      return "";
-    });
   };
-
-  // 🆕🎯 Active class: คลาสที่ "เลือกไว้ล่วงหน้า" ตอนนี้ — วาดกล่อง/Polygon/Pose/Landmark
-  // ใหม่ทุกจุดจะได้ label นี้ทันที ไม่ต้องมาพิมพ์แก้ทีหลังทุกอัน
-  // เลือกได้จากการคลิก chip ในรายการคลาส หรือกดคีย์ลัดตัวเลข 1-9 (อ้างอิงตำแหน่งในรายการ knownClasses)
-  // จำค่าไว้ต่อโปรเจกต์ เหมือน knownClasses/trainTarget
-  const ACTIVE_CLASS_KEY = `active_class_${project}`;
-  const [activeClass, setActiveClassState] = useState(() => {
-    try {
-      return localStorage.getItem(ACTIVE_CLASS_KEY) || "";
-    } catch {
-      return "";
-    }
-  });
-
-  const setActiveClass = (name) => {
-    setActiveClassState(name);
-    try {
-      localStorage.setItem(ACTIVE_CLASS_KEY, name || "");
-    } catch (err) {
-      console.error("Save active class failed:", err);
-    }
-  };
-
-  // เลือก/ยกเลิกเลือก active class ด้วยการคลิก chip ซ้ำ (คลิกซ้ำที่ตัวเดิม = ยกเลิก)
-  const toggleActiveClass = (name) => {
-    setActiveClass(activeClass === name ? "" : name);
-  };
-
-  // ใช้ตอนสร้าง shape ใหม่ทุกแบบ: ถ้ามี active class อยู่ ใช้ค่านั้นเป็น label ทันที
-  // ถ้ายังไม่ได้เลือกไว้ ค่อย fallback ไปใช้ label เริ่มต้นเดิมของแต่ละเครื่องมือ
-  const getDefaultShapeLabel = (fallback) => (activeClass && activeClass.trim() ? activeClass : fallback);
 
   // ==========================================================
-  // 🆕🧠 เลือกว่าจะเทรนด้วย "YOLOv8" (Detection/Segmentation ปกติ ไม่ต้องมี
-  // คำบรรยาย) หรือ "Qwen2-VL" (Vision-Language ต้องมีคำบรรยายประกอบ annotation
-  // ถึงจะเทรนได้ผลดี) — ค่านี้ใช้ซ่อน/โชว์ช่อง "คำบรรยาย (สำหรับ VLM)" ของ
-  // annotation ทุกแบบด้านล่าง (Box/Polygon/Pose/Landmark) เพื่อไม่ให้ผู้ใช้
-  // เสียเวลากรอก description โดยไม่จำเป็นตอนตั้งใจเทรน YOLOv8 อย่างเดียว
-  // จำค่าไว้ต่อโปรเจกต์ ใช้ pattern เดียวกับ RESOLUTION_TARGET_KEY/KNOWN_CLASSES_KEY
-  // ==========================================================
-  const TRAIN_TARGET_KEY = `train_target_${project}`;
-
-  const loadSavedTrainTarget = () => {
-    try {
-      const saved = localStorage.getItem(TRAIN_TARGET_KEY);
-      if (saved === "yolov8" || saved === "qwen2vl") return saved;
-    } catch {
-      // เผื่อค่าที่เก็บไว้เพี้ยน -> fallback ค่าเริ่มต้นด้านล่าง
-    }
-    return "yolov8";
-  };
-
-  const [trainTarget, setTrainTarget] = useState(() => loadSavedTrainTarget());
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(TRAIN_TARGET_KEY, trainTarget);
-    } catch (err) {
-      console.error("Save train target failed:", err);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trainTarget]);
-
-  // ==========================================================
-  // 🆕🔄 Sync ค่า per-project (เป้าหมายการใช้งาน + รายชื่อคลาส) ใหม่ทุกครั้งที่
-  // "project" เปลี่ยนค่าจริง (ไม่ใช่แค่ตอน mount ครั้งแรก)
+  // 🆕🔄 Re-sync per-project values (target usage + class list) every time
+  // "project" actually changes (not just on the initial mount)
   // ==========================================================
   const prevProjectRef = useRef(project);
 
   useEffect(() => {
-    if (prevProjectRef.current === project) return; // โปรเจกต์เดิม ไม่ต้องโหลดซ้ำ
+    if (prevProjectRef.current === project) return; // same project, no need to reload
     prevProjectRef.current = project;
 
     const savedSize = loadSavedTargetImageSize();
     setTargetImageSize(savedSize);
-    setTrainTarget(loadSavedTrainTarget()); // 🆕 โหลดค่า train target ของโปรเจกต์ใหม่ด้วย
 
     try {
       const savedClasses = JSON.parse(localStorage.getItem(KNOWN_CLASSES_KEY) || "[]");
@@ -752,20 +679,13 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
       setKnownClasses([]);
     }
 
-    // 🆕 โหลด active class ของโปรเจกต์ใหม่ด้วย (คนละค่ากับโปรเจกต์เดิม)
-    try {
-      setActiveClassState(localStorage.getItem(ACTIVE_CLASS_KEY) || "");
-    } catch {
-      setActiveClassState("");
-    }
-
-    // 🆕 สลับโปรเจกต์แล้วก็ควรล้างภาพ/annotation ของโปรเจกต์เก่าทิ้งด้วย
+    // 🆕 When switching projects, also clear the old project's image/annotations
     setCapturedImage(null);
     resetAnnotations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project]);
 
-  // 🆕📶 ปิด connection ของ ESP32-CAM stream ให้เรียบร้อยตอนออกจากหน้านี้ไปเลย
+  // 🆕📶 Properly close the ESP32-CAM stream connection when leaving this page
   useEffect(() => {
     return () => {
       if (esp32ImgRef.current) {
@@ -774,25 +694,25 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
     };
   }, []);
 
-  // 📱 ปิด polling ของกล้องมือถือให้เรียบร้อยตอนออกจากหน้านี้ไปเลย
+  // 📱 Properly stop the mobile camera polling when leaving this page
   useEffect(() => {
     return () => stopMobilePolling();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🛠️ กลไกเปิด/ปิดกล้อง (เฉพาะ PC Camera / browser)
+  // 🛠️ Camera open/close mechanism (PC Camera / browser only)
   useEffect(() => {
     if (isCameraActive && cameraSource === "browser") {
       setCameraErrorMessage("");
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setCameraErrorMessage("เบราว์เซอร์นี้ไม่รองรับการเปิดกล้อง กรุณาใช้ Chrome/Edge/Firefox เวอร์ชันล่าสุด");
+        setCameraErrorMessage("This browser doesn't support opening a camera. Please use the latest Chrome/Edge/Firefox.");
         setIsCameraActive(false);
         return;
       }
 
       if (location.protocol !== "https:" && location.hostname !== "localhost") {
-        setCameraErrorMessage(`ต้องเปิดผ่าน HTTPS หรือ localhost เท่านั้น (ตอนนี้เปิดผ่าน "${location.protocol}//${location.hostname}" ซึ่งเบราว์เซอร์จะไม่อนุญาตกล้อง)`);
+        setCameraErrorMessage(`Must be opened via HTTPS or localhost only (currently opened via "${location.protocol}//${location.hostname}", which the browser won't allow camera access on)`);
         setIsCameraActive(false);
         return;
       }
@@ -803,18 +723,18 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
         })
         .catch((err) => {
           console.error("Error webcam: ", err);
-          let msg = `ไม่สามารถเปิดกล้องได้ (${err.name || "unknown"}: ${err.message || ""})`;
+          let msg = `Couldn't open the camera (${err.name || "unknown"}: ${err.message || ""})`;
 
           if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-            msg = "คุณปฏิเสธสิทธิ์การใช้กล้อง กรุณากดไอคอนกุญแจ/กล้องข้าง URL bar แล้วเปลี่ยนเป็น Allow แล้วลองใหม่";
+            msg = "You denied camera permission. Please click the lock/camera icon next to the URL bar, switch it to Allow, and try again.";
           } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
-            msg = "ไม่พบกล้องในเครื่องนี้ กรุณาตรวจสอบว่ามีกล้องต่ออยู่";
+            msg = "No camera found on this device. Please check that a camera is connected.";
           } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
-            msg = "กล้องกำลังถูกใช้งานโดยแอปอื่นอยู่ (เช่น Zoom, Teams, แท็บอื่น) กรุณาปิดแอปนั้นแล้วลองใหม่";
+            msg = "The camera is currently being used by another app (e.g. Zoom, Teams, another tab). Please close that app and try again.";
           } else if (err.name === "OverconstrainedError") {
-            msg = "กล้องไม่รองรับความละเอียดที่ขอ (640x480)";
+            msg = "The camera doesn't support the requested resolution (640x480)";
           } else if (err.name === "SecurityError") {
-            msg = "ถูกบล็อกด้วยเหตุผลด้านความปลอดภัย (ต้องเป็น HTTPS หรือ localhost)";
+            msg = "Blocked for security reasons (must be HTTPS or localhost)";
           }
 
           setCameraErrorMessage(msg);
@@ -834,7 +754,7 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
     }
   };
 
-  // ปิดกล้อง/สตรีมทั้งหมด ไม่ว่าจะเป็นแหล่งไหน (ใช้ตอนถ่ายภาพเสร็จ หรือสลับ/อัปโหลดไฟล์แทน)
+  // Close every camera/stream, regardless of source (used after finishing a capture, or when switching/uploading a file instead)
   const stopAnyCamera = () => {
     stopCamera();
 
@@ -842,7 +762,7 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
       esp32ImgRef.current.src = "";
     }
 
-    // 📱 ปิด session/polling ของกล้องมือถือด้วยทุกครั้งที่สลับ/เลิกใช้กล้อง
+    // 📱 Also close the mobile camera session/polling every time the camera is switched/stopped
     stopMobilePolling();
     setMobileSessionId(null);
     setMobileQrUrl("");
@@ -854,7 +774,7 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
     setEsp32IpConnected(null);
   };
 
-  // สลับ Camera Source: ปิดกล้อง/สตรีมของแหล่งเดิมก่อนเสมอ กันค้าง
+  // Switch Camera Source: always close the previous source's camera/stream first, to avoid it hanging
   const handleSelectCameraSource = (source) => {
     if (source === cameraSource) return;
     stopAnyCamera();
@@ -862,7 +782,7 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
   };
 
   // ==========================================================
-  // 📶 ESP32-CAM: กดปุ่ม "เชื่อมต่อ" เพื่อยืนยัน IP แล้วเริ่ม stream จริง
+  // 📶 ESP32-CAM: click "Connect" to confirm the IP and actually start the stream
   // ==========================================================
   const handleConnectEsp32 = () => {
   const normalized = normalizeCameraUrl(esp32IpInput);
@@ -880,7 +800,7 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
 };
 
   // ==========================================================
-  // 📱 Mobile Camera: สร้าง session ใหม่ผูกกับผู้ใช้ที่ login อยู่ + QR Code ให้มือถือสแกน
+  // 📱 Mobile Camera: create a new session tied to the logged-in user + QR Code for the phone to scan
   // ==========================================================
   const generateMobileSessionId = () => {
     if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -894,7 +814,7 @@ const [showAnnotationGuide, setShowAnnotationGuide] = useState(false);
     }
   };
 
-// ดึงเฟรมล่าสุดที่มือถือส่งเข้ามา (polling ต่อเนื่องทุก MOBILE_POLL_INTERVAL_MS)
+// Fetch the latest frame sent in by the phone (continuous polling every MOBILE_POLL_INTERVAL_MS)
 const pollMobileFrame = async (serverUrl, email, sessionId) => {
   try {
     const cleanServerUrl = serverUrl.replace(/\/$/, "");
@@ -909,13 +829,13 @@ const pollMobileFrame = async (serverUrl, email, sessionId) => {
       if (mobileImgRef.current) mobileImgRef.current.src = result.image_url;
       setMobileStatus("connected");
 
-      // 🆕 ถ้า backend บอกว่าเฟรมนี้คือภาพที่ผู้ใช้กด "ถ่ายภาพ" จากมือถือแล้ว
-      // (ไม่ใช่แค่พรีวิวต่อเนื่อง) ให้ดึงภาพนั้นไปใส่ canvas อัตโนมัติ
+      // 🆕 If the backend says this frame is an image the user pressed "capture" on the phone for
+      // (not just a continuous preview), automatically pull that image into the canvas
       if (result.captured) {
         await captureMobilePhotoFromUrl(result.image_url);
       }
     } else {
-      // ยังไม่มีเฟรมเข้ามา (มือถือยังไม่เปิดกล้อง/ยังสแกนไม่เสร็จ) -> ยังคงรอต่อ ไม่ถือว่า error
+      // No frame has come in yet (phone hasn't opened its camera / hasn't finished scanning) -> keep waiting, not treated as an error
       setMobileStatus(prev => (prev === "connected" ? "waiting" : prev));
     }
   } catch (err) {
@@ -924,8 +844,8 @@ const pollMobileFrame = async (serverUrl, email, sessionId) => {
   }
 };
 
-// 🆕 ดึงภาพที่มือถือกด "ถ่ายภาพ" ยืนยันแล้ว มาเป็น capturedImage บน canvas
-// (ทำงานแบบเดียวกับ captureSnapshot เดิม แค่ source เป็น URL แทน element สด)
+// 🆕 Pull the photo the phone confirmed as "captured" into capturedImage on the canvas
+// (works the same way as the existing captureSnapshot, just with a URL as the source instead of a live element)
 const captureMobilePhotoFromUrl = async (imageUrl) => {
   try {
     const img = new Image();
@@ -947,13 +867,13 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
   }
 };
 
-  // กดปุ่ม "สร้าง QR Code" -> ขอ session ใหม่จาก Server (ผูกกับอีเมลผู้ใช้ที่ login) แล้วเริ่ม polling ดึงภาพ
+  // Click "Generate QR Code" -> request a new session from the server (tied to the logged-in user's email) then start polling for the image
   const handleGenerateMobileQr = async () => {
     const serverUrl = localStorage.getItem("cloud_url");
     const email = localStorage.getItem("email");
 
     if (!serverUrl || !email) {
-      alert("กรุณาตรวจสอบการตั้งค่า Cloud URL และการ Login ของคุณ");
+      alert("Please check your Cloud URL settings and make sure you're logged in.");
       return;
     }
 
@@ -975,12 +895,12 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
       if (result && result.session_id) sessionId = result.session_id;
     } catch (err) {
       console.error("Create mobile session failed:", err);
-      // เผื่อ Server ยังไม่มี endpoint นี้พร้อม -> ใช้ sessionId ที่สร้างฝั่งนี้ต่อไปได้เลย ไม่ต้อง block ผู้ใช้
+      // In case the server doesn't have this endpoint ready yet -> keep using the client-generated sessionId, don't block the user
     }
 
-    // 🔗 URL ที่ QR ชี้ไป — ผูกกับอีเมลผู้ใช้ที่ login อยู่ + โปรเจกต์ปัจจุบัน + session เฉพาะครั้งนี้
-    // ⚠️ ต้องแนบ "server" (cloud_url) ไปด้วย เพราะมือถือเป็นคนละอุปกรณ์ ไม่มี localStorage
-    // เดียวกับเครื่องนี้ ถ้าไม่แนบไป หน้ากล้องมือถือจะไม่รู้ว่าต้องอัปโหลดเฟรมไปที่ไหน
+    // 🔗 The URL the QR points to — tied to the logged-in user's email + current project + this specific session
+    // ⚠️ Must include "server" (cloud_url) too, since the phone is a different device with no
+    // access to this machine's localStorage. Without it, the mobile camera page wouldn't know where to upload frames to.
     const captureUrl = `${window.location.origin}/mobile-camera?session=${sessionId}&email=${encodeURIComponent(email)}&project=${encodeURIComponent(project)}&server=${encodeURIComponent(serverUrl)}`;
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(captureUrl)}`;
 
@@ -993,7 +913,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     }, MOBILE_POLL_INTERVAL_MS);
   };
 
-  // ⏪ ระบบ Undo (Ctrl+Z) - เก็บ snapshot ของ boxes/polygons/blurRegions/poses/landmarks ก่อนทำ action ที่เปลี่ยนแปลงข้อมูล
+  // ⏪ Undo system (Ctrl+Z) - stores a snapshot of boxes/polygons/blurRegions/poses/landmarks before any action that changes the data
   const historyRef = useRef([]);
   const MAX_HISTORY = 50;
 
@@ -1018,7 +938,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     setLandmarks(last.landmarks || []); // 📍 V8
   };
 
-  // ล้าง annotation (กล่อง/polygon/blur/pose/landmark) ทั้งหมดของภาพเดิม เวลาจะเริ่มภาพใหม่
+  // Clear all annotations (box/polygon/blur/pose/landmark) for the current image when starting a new one
   const resetAnnotations = () => {
     setBoxes([]);
     setPolygons([]);
@@ -1050,7 +970,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     historyRef.current = [];
   };
 
-  // 🆕🖼️ ดึงแกลเลอรีภาพที่บันทึกแล้วจริงในโปรเจกต์นี้จาก Server
+  // 🆕🖼️ Fetch the gallery of images actually saved in this project from the server
   const fetchProjectGallery = async () => {
     const serverUrl = localStorage.getItem("cloud_url");
     const email = localStorage.getItem("email");
@@ -1078,13 +998,13 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     }
   };
 
-  // โหลดแกลเลอรีครั้งแรกตอนเปิดหน้า
+  // Load the gallery once when the page first opens
   useEffect(() => {
     fetchProjectGallery();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 📸 ถ่ายภาพจากแหล่งปัจจุบัน (video ของ PC Camera, img stream ของ ESP32-CAM หรือ img ของกล้องมือถือ)
+  // 📸 Capture an image from the current source (video for PC Camera, img stream for ESP32-CAM, or img for mobile camera)
   const captureSnapshot = () => {
     let sourceEl, naturalW, naturalH;
 
@@ -1115,7 +1035,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     stopAnyCamera();
   };
 
-  // 📂 อัปโหลดภาพจากไฟล์ภายนอก — resize ลงตาม targetImageSize ที่ตั้งไว้เช่นกัน
+  // 📂 Upload an image from an external file — resized according to the set targetImageSize as well
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1135,7 +1055,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     reader.readAsDataURL(file);
   };
 
-  // 🎯 ฟังก์ชันการคำนวณตำแหน่งเมาส์บนคอนเทนเนอร์
+  // 🎯 Function to calculate the mouse position within the container
   const getMousePos = (e) => {
     if (!imageContainerRef.current) return { x: 0, y: 0 };
     const rect = imageContainerRef.current.getBoundingClientRect();
@@ -1159,8 +1079,8 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     return { x, y };
   };
 
-  // 🆕📐 คำนวณว่ารูปจริง (objectFit: contain) แสดงอยู่ตรงไหนของ container จริงๆ
-  // (ใช้ซ้ำสำหรับ map พิกัด Blur region -> พิกเซลจริงของภาพตอนบันทึกด้วย)
+  // 🆕📐 Calculate exactly where the actual image (objectFit: contain) is displayed within the container
+  // (reused for mapping Blur region coordinates -> actual image pixels when saving too)
   const getImageDisplayRect = (containerWidth, containerHeight, naturalWidth, naturalHeight) => {
     if (!naturalWidth || !naturalHeight || !containerWidth || !containerHeight) {
       return { offsetX: 0, offsetY: 0, width: containerWidth, height: containerHeight };
@@ -1202,7 +1122,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
   };
 
   // ==========================================================
-  // 🟧 Bounding Box (โหมด Detection)
+  // 🟧 Bounding Box (Detection mode)
   // ==========================================================
   const getBoxHandleAt = (pos, box) => {
     const nearLeft = Math.abs(pos.x - box.x) <= HANDLE_TOLERANCE;
@@ -1298,7 +1218,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
   };
 
   // ==========================================================
-  // 🦴 V8: หา keypoint ของ pose ที่วาดไว้แล้ว ตรงตำแหน่งเมาส์ (สำหรับลากย้าย)
+  // 🦴 V8: find an already-drawn pose keypoint at the mouse position (for dragging)
   // ==========================================================
   const findPoseVertexAt = (pos) => {
     for (let pi = poses.length - 1; pi >= 0; pi--) {
@@ -1313,7 +1233,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     return null;
   };
 
-  // 📍 V8: หา landmark point ที่วาดไว้แล้ว ตรงตำแหน่งเมาส์ (สำหรับลากย้าย)
+  // 📍 V8: find an already-drawn landmark point at the mouse position (for dragging)
   const findLandmarkVertexAt = (pos) => {
     for (let li = landmarks.length - 1; li >= 0; li--) {
       const lm = landmarks[li];
@@ -1327,7 +1247,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     return null;
   };
 
-  // 🦴 V8: เพิ่มจุด keypoint ถัดไปตามลำดับของ POSE_TEMPLATE — ครบทุกจุดแล้ว auto ปิด pose ให้เอง
+  // 🦴 V8: add the next keypoint in POSE_TEMPLATE order — once all points are placed the pose closes automatically
   const addPoseKeypointAt = (pos) => {
     const nextIndex = currentPoseKeypoints.length;
     const name = POSE_TEMPLATE.names[nextIndex];
@@ -1337,8 +1257,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
       pushHistory();
       setPoses(prev => [...prev, {
         id: Date.now(),
-        label: getDefaultShapeLabel("person"),
-        description: "",
+        label: "person",
         keypoints: updated,
         colorOverride: poseColorChoice !== AUTO_COLOR_VALUE ? poseColorChoice : undefined
       }]);
@@ -1353,8 +1272,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     pushHistory();
     setPoses(prev => [...prev, {
       id: Date.now(),
-      label: getDefaultShapeLabel("person"),
-      description: "",
+      label: "person",
       keypoints: currentPoseKeypoints,
       colorOverride: poseColorChoice !== AUTO_COLOR_VALUE ? poseColorChoice : undefined
     }]);
@@ -1379,12 +1297,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     setPoses(prev => prev.map(p => p.id === id ? { ...p, label: newName } : p));
   };
 
-  // 🆕📝 แก้ description ของ Pose
-  const handlePoseDescriptionChange = (id, newDescription) => {
-    setPoses(prev => prev.map(p => p.id === id ? { ...p, description: newDescription } : p));
-  };
-
-  // 📍 V8: เพิ่มจุด landmark ถัดไปตามลำดับของ template ที่เลือกอยู่ — ครบทุกจุดแล้ว auto ปิด landmark set ให้เอง
+  // 📍 V8: add the next landmark point in the order of the currently selected template — once all points are placed the landmark set closes automatically
   const addLandmarkPointAt = (pos) => {
     const template = LANDMARK_TEMPLATES[landmarkTemplateChoice];
     const nextIndex = currentLandmarkPoints.length;
@@ -1395,8 +1308,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
       pushHistory();
       setLandmarks(prev => [...prev, {
         id: Date.now(),
-        label: getDefaultShapeLabel(landmarkTemplateChoice === "hand" ? "hand" : "face"),
-        description: "",
+        label: landmarkTemplateChoice === "hand" ? "hand" : "face",
         templateType: landmarkTemplateChoice,
         points: updated,
         colorOverride: landmarkColorChoice !== AUTO_COLOR_VALUE ? landmarkColorChoice : undefined
@@ -1412,8 +1324,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     pushHistory();
     setLandmarks(prev => [...prev, {
       id: Date.now(),
-      label: getDefaultShapeLabel(landmarkTemplateChoice === "hand" ? "hand" : "face"),
-      description: "",
+      label: landmarkTemplateChoice === "hand" ? "hand" : "face",
       templateType: landmarkTemplateChoice,
       points: currentLandmarkPoints,
       colorOverride: landmarkColorChoice !== AUTO_COLOR_VALUE ? landmarkColorChoice : undefined
@@ -1437,11 +1348,6 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
 
   const handleLandmarkLabelChange = (id, newName) => {
     setLandmarks(prev => prev.map(l => l.id === id ? { ...l, label: newName } : l));
-  };
-
-  // 🆕📝 แก้ description ของ Landmark
-  const handleLandmarkDescriptionChange = (id, newDescription) => {
-    setLandmarks(prev => prev.map(l => l.id === id ? { ...l, description: newDescription } : l));
   };
 
   const handleMouseDown = (e) => {
@@ -1499,7 +1405,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
       return;
     }
 
-    // 🔒 V3: Blur mode - ลากวาดกรอบพื้นที่ที่จะเบลอ (แบบเดียวกับ box แต่ไม่มี handle resize/label)
+    // 🔒 V3: Blur mode - drag-draw the box for the area to be blurred (same as a box, but without resize handles/label)
     if (isBlurMode) {
       setIsDrawingBlur(true);
       setBlurStartPos(pos);
@@ -1539,7 +1445,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     return;
   }
 
-  // 🆕 คลิกขวา + วางอยู่บนจุด Polygon = เริ่มลากจุดนั้นได้เลย (แทนที่จะเด้งเมนูลบทั้งรูป)
+  // 🆕 Right-click + hovering on a Polygon point = start dragging that point right away (instead of popping the delete-whole-shape menu)
   if (e.button === 2) {
     if (!capturedImage || augMode !== "original" || !isSegmentation) return;
     const pos = getMousePos(e);
@@ -1548,7 +1454,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
       e.preventDefault();
       pushHistory();
       setDraggingVertex(vertexHit);
-      isRightDragRef.current = true; // กัน contextmenu ที่จะตามมาไปลบทั้งรูป
+      isRightDragRef.current = true; // prevent the following contextmenu from deleting the whole shape
     }
     return;
   }
@@ -1647,7 +1553,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
 
        if (augMode === "original") {
   const vertexHit = findPolygonVertexAt(pos);
-  hoveredPolygonVertexRef.current = vertexHit; // 🆕 จำไว้ใช้กับปุ่ม 'd'
+  hoveredPolygonVertexRef.current = vertexHit; // 🆕 remember for use with the 'd' key
   if (vertexHit) {
     setHoverCursor("grab");
   } else if (currentPolygonPoints.length === 0 && findPolygonEdgeInsertion(pos)) {
@@ -1661,7 +1567,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
       return;
     }
 
-    // 🔒 V3: Blur mode - อัปเดตกรอบที่กำลังลากวาดอยู่ (ไม่ยุ่งกับ logic resize/hover ของ box)
+    // 🔒 V3: Blur mode - update the box currently being drag-drawn (doesn't touch the box's resize/hover logic)
     if (isBlurMode) {
       if (!isDrawingBlur || !currentBlurBox) return;
       const pos = getMousePos(e);
@@ -1760,7 +1666,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
       return;
     }
 
-    // 🔒 V3: Blur mode - จบการวาด บันทึกกรอบ blur ใหม่ (ถ้าใหญ่พอ กันคลิกพลาด)
+    // 🔒 V3: Blur mode - finish drawing, save the new blur box (if big enough, to prevent accidental clicks)
     if (isBlurMode) {
       if (!isDrawingBlur || !currentBlurBox) return;
       setIsDrawingBlur(false);
@@ -1794,7 +1700,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
 
     if (currentBox.w > 5 && currentBox.h > 5) {
       pushHistory();
-      setBoxes([...boxes, { ...currentBox, id: Date.now(), label: getDefaultShapeLabel("object"), description: "", colorOverride: boxColorChoice !== AUTO_COLOR_VALUE ? boxColorChoice : undefined }]);
+      setBoxes([...boxes, { ...currentBox, id: Date.now(), label: "object", colorOverride: boxColorChoice !== AUTO_COLOR_VALUE ? boxColorChoice : undefined }]);
     }
     setCurrentBox(null);
   };
@@ -1830,28 +1736,22 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
     setBoxes(boxes.map(b => b.id === id ? { ...b, label: newName } : b));
   };
 
-  // 🆕📝 แก้ description (คำบรรยายวัตถุ) ของ Bounding Box — ใช้เป็น context เพิ่มเติมให้ VLM
-  // นอกเหนือจาก label เดี่ยวๆ เช่น "หมวกกันน็อคสีแดง มีรอยขีดข่วนด้านหน้า"
-  const handleBoxDescriptionChange = (id, newDescription) => {
-    setBoxes(boxes.map(b => b.id === id ? { ...b, description: newDescription } : b));
-  };
-
-  // 🔒 V3: ลบพื้นที่ blur ที่วาดไว้แล้ว
+  // 🔒 V3: delete an already-drawn blur area
   const deleteBlurRegion = (id) => {
     pushHistory();
     setBlurRegions(prev => prev.filter(r => r.id !== id));
   };
 
   // ==========================================================
-  // ⬡ Polygon (โหมด Segmentation)
+  // ⬡ Polygon (Segmentation mode)
   // ==========================================================
   const finishPolygon = () => {
     if (currentPolygonPoints.length < 3) {
-      alert("ต้องคลิกอย่างน้อย 3 จุด ก่อนจะปิดรูป Polygon ได้");
+      alert("You must click at least 3 points before you can close the Polygon shape.");
       return;
     }
     pushHistory();
-    setPolygons(prev => [...prev, { id: Date.now(), label: getDefaultShapeLabel("object"), description: "", points: currentPolygonPoints, colorOverride: polygonColorChoice !== AUTO_COLOR_VALUE ? polygonColorChoice : undefined }]);
+    setPolygons(prev => [...prev, { id: Date.now(), label: "object", points: currentPolygonPoints, colorOverride: polygonColorChoice !== AUTO_COLOR_VALUE ? polygonColorChoice : undefined }]);
     setCurrentPolygonPoints([]);
     setHoverPoint(null);
   };
@@ -1868,21 +1768,8 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       const tag = (e.target && e.target.tagName) || "";
-      // 🆕 กันคีย์ลัดชนกับตอนกำลังพิมพ์/เลือกในฟอร์ม (input ตัวเลข, ช่องกรอกชื่อคลาส, dropdown สี ฯลฯ)
-      const isTextInput = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+      const isTextInput = tag === "INPUT" || tag === "TEXTAREA";
       if (isTextInput) return;
-
-      // 🆕🎯 คีย์ลัด 1-9: สลับ Active class ทันทีตามลำดับที่โชว์ในรายการคลาสที่รู้จัก (knownClasses)
-      // กด "3" = เลือกคลาสลำดับที่ 3 เป็น active class (label เริ่มต้นของ Box/Polygon/Pose/Landmark ที่วาดใหม่)
-      // ไม่ทำงานถ้ากด Ctrl/Alt/Meta ค้างอยู่ (กันชนกับคีย์ลัดอื่น เช่น Ctrl+V ของ browser บางตัว)
-      if (!e.ctrlKey && !e.metaKey && !e.altKey && /^[1-9]$/.test(e.key)) {
-        const idx = Number(e.key) - 1;
-        if (idx < knownClasses.length) {
-          e.preventDefault();
-          toggleActiveClass(knownClasses[idx]);
-        }
-        return;
-      }
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
@@ -1942,7 +1829,7 @@ const captureMobilePhotoFromUrl = async (imageUrl) => {
   }
 }
 
-// 🆕 กด 'd' ตอน hover อยู่บนจุด Polygon ที่วาดไว้แล้ว (ไม่ใช่ระหว่างวาดใหม่) -> ลบจุดนั้นตัวเดียว
+// 🆕 Press 'd' while hovering an already-drawn Polygon point (not while drawing a new one) -> delete just that one point
 if (isSegmentation && e.key.toLowerCase() === "d") {
   e.preventDefault();
   deleteHoveredPolygonVertex();
@@ -1970,7 +1857,7 @@ if (isSegmentation && e.key.toLowerCase() === "d") {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSegmentation, currentPolygonPoints, isKeypointMode, currentPoseKeypoints, isLandmarkMode, currentLandmarkPoints, isCanvasFullscreen, boxes, polygons, knownClasses, activeClass]);
+  }, [isSegmentation, currentPolygonPoints, isKeypointMode, currentPoseKeypoints, isLandmarkMode, currentLandmarkPoints, isCanvasFullscreen, boxes, polygons]);
 
   useEffect(() => {
     const el = imageContainerRef.current;
@@ -2048,7 +1935,7 @@ if (isSegmentation && e.key.toLowerCase() === "d") {
           };
         }));
 
-        // 🔒 V3: Blur regions ก็ต้อง rescale ด้วยหลักการเดียวกับ boxes (มุมบนซ้าย + มุมล่างขวา)
+        // 🔒 V3: Blur regions also need to be rescaled the same way as boxes (top-left corner + bottom-right corner)
         setBlurRegions(prev => prev.map(r => {
           const topLeft = remapPoint({ x: r.x, y: r.y });
           const bottomRight = remapPoint({ x: r.x + r.w, y: r.y + r.h });
@@ -2061,13 +1948,13 @@ if (isSegmentation && e.key.toLowerCase() === "d") {
           };
         }));
 
-        // 🦴 V8: Pose keypoints ก็ rescale ตามหลักการเดียวกัน (remap แต่ละจุด)
+        // 🦴 V8: Pose keypoints are also rescaled the same way (remapping each point)
         setPoses(prev => prev.map(pose => ({
           ...pose,
           keypoints: pose.keypoints.map(pt => ({ ...pt, ...remapPoint(pt) }))
         })));
 
-        // 📍 V8: Landmark points ก็ rescale เช่นเดียวกัน
+        // 📍 V8: Landmark points are also rescaled the same way
         setLandmarks(prev => prev.map(lm => ({
           ...lm,
           points: lm.points.map(pt => ({ ...pt, ...remapPoint(pt) }))
@@ -2165,8 +2052,8 @@ if (isSegmentation && e.key.toLowerCase() === "d") {
     if (draggingVertex && draggingVertex.polygonId === id) setDraggingVertex(null);
   };
 
-  // 🆕 ลบเฉพาะจุด (vertex) เดียวของ Polygon ที่กำลัง hover อยู่ (กดปุ่ม 'd')
-// ถ้าลบแล้วเหลือจุดน้อยกว่า 3 จุด (Polygon ไม่ถูกต้องแล้ว) จะลบทั้งรูปทิ้งไปด้วย
+  // 🆕 delete just the single vertex of the Polygon currently being hovered (press 'd')
+// if deleting it leaves fewer than 3 points (Polygon becomes invalid), the entire shape is also deleted
 const deleteHoveredPolygonVertex = () => {
   const hovered = hoveredPolygonVertexRef.current;
   if (!hovered) return;
@@ -2190,30 +2077,25 @@ const deleteHoveredPolygonVertex = () => {
     setPolygons(polygons.map(p => p.id === id ? { ...p, label: newName } : p));
   };
 
-  // 🆕📝 แก้ description ของ Polygon
-  const handlePolygonDescriptionChange = (id, newDescription) => {
-    setPolygons(polygons.map(p => p.id === id ? { ...p, description: newDescription } : p));
-  };
-
   // ==========================================================
-  // 🎨 V4: กำหนดสีเส้นกรอบ/ป้าย label อัตโนมัติตามชื่อ class (label)
-  // ใช้ hash ของข้อความ label แล้ว mod กับจำนวนสีใน palette เพื่อให้
-  // "label เดียวกัน ได้สีเดิมเสมอ" ไม่ว่าจะเป็น Bounding Box หรือ Polygon
-  // ช่วยแยกจุดนำสายตาเวลามีหลาย label ปนกันในภาพเดียว เช่น
-  // "helmet" (สวมหมวก) กับ "no_helmet" (ไม่สวมหมวก) จะได้คนละสีทันที
-  // ไม่ต้องตั้งค่าเอง — เพิ่ม label ใหม่มาก็ได้สีใหม่จาก palette อัตโนมัติ
+  // 🎨 V4: automatically assign a border/label color based on the class (label) name
+  // Uses a hash of the label text mod the number of colors in the palette, so that
+  // "the same label always gets the same color" whether it's a Bounding Box or Polygon.
+  // Helps visually separate multiple labels mixed in the same image, e.g. "helmet" vs
+  // "no_helmet" instantly get different colors — no manual setup needed, adding a new
+  // label automatically gets a new color from the palette
   // ==========================================================
   const LABEL_COLOR_PALETTE = [
-    "#10B981", // เขียว
-    "#EF4444", // แดง
-    "#0078D7", // ฟ้า
-    "#F59E0B", // ส้ม/เหลือง
-    "#8B5CF6", // ม่วง
-    "#EC4899", // ชมพู
-    "#14B8A6", // เขียวอมฟ้า (teal)
-    "#F97316", // ส้มเข้ม
+    "#10B981", // green
+    "#EF4444", // red
+    "#0078D7", // blue
+    "#F59E0B", // orange/yellow
+    "#8B5CF6", // purple
+    "#EC4899", // pink
+    "#14B8A6", // teal
+    "#F97316", // dark orange
     "#6366F1", // indigo
-    "#84CC16", // เขียวมะนาว
+    "#84CC16", // lime green
   ];
 
   const getColorForLabel = (label) => {
@@ -2225,7 +2107,7 @@ const deleteHoveredPolygonVertex = () => {
     return LABEL_COLOR_PALETTE[hash % LABEL_COLOR_PALETTE.length];
   };
 
-  // แปลง hex color -> "r, g, b" string (ใช้ทำพื้นหลังโปร่งแสงของกล่อง/polygon ตามสี label)
+  // Convert hex color -> "r, g, b" string (used for the translucent background of a box/polygon based on the label color)
   const hexToRgbString = (hex) => {
     const clean = hex.replace("#", "");
     const r = parseInt(clean.substring(0, 2), 16);
@@ -2235,7 +2117,7 @@ const deleteHoveredPolygonVertex = () => {
   };
 
   // ==========================================================
-  // 🖱️ คลิกขวา -> ลบกล่อง/polygon/blur region/pose/landmark ตรงตำแหน่งที่ชี้อยู่ทันที
+  // 🖱️ Right-click -> immediately delete the box/polygon/blur region/pose/landmark at the pointed-at position
   // ==========================================================
   const pointInBox = (pos, box) =>
     pos.x >= box.x && pos.x <= box.x + box.w && pos.y >= box.y && pos.y <= box.y + box.h;
@@ -2255,7 +2137,7 @@ const deleteHoveredPolygonVertex = () => {
   const handleContainerContextMenu = (e) => {
     e.preventDefault();
 
-    // 🆕 ถ้าเพิ่งใช้คลิกขวาลากจุด Polygon ไปแล้ว ไม่ต้องเข้า logic ลบทิ้งด้านล่าง
+    // 🆕 If a right-click was just used to drag a Polygon point, don't run the delete logic below
     if (isRightDragRef.current) {
       isRightDragRef.current = false;
       return;
@@ -2265,7 +2147,7 @@ const deleteHoveredPolygonVertex = () => {
 
     const pos = getMousePos(e);
 
-    // 🦴📍 V8: เช็คจุด pose/landmark ก่อน (ลบทั้งชุดถ้าคลิกขวาใกล้จุดใดจุดหนึ่ง)
+    // 🦴📍 V8: check pose/landmark points first (delete the whole set if right-clicked near any one point)
     const poseHit = findPoseVertexAt(pos);
     if (poseHit) {
       deletePose(poseHit.poseId);
@@ -2300,7 +2182,7 @@ const deleteHoveredPolygonVertex = () => {
   const handleAugModeChange = (newMode) => {
     if (isSegmentation && currentPolygonPoints.length > 0 && newMode !== "original") {
       const confirmed = window.confirm(
-        "มีจุด Polygon ที่ยังวาดค้างอยู่ (ยังไม่ปิดรูป) การเปลี่ยนโหมดจะล้างจุดเหล่านั้นทิ้ง ต้องการดำเนินการต่อหรือไม่?"
+        "There's an unfinished Polygon (not yet closed). Switching modes will discard those points. Do you want to continue?"
       );
       if (!confirmed) return;
       setCurrentPolygonPoints([]);
@@ -2309,12 +2191,12 @@ const deleteHoveredPolygonVertex = () => {
     setAugMode(newMode);
   };
 
-  // 🌟 V2/V3/V8: เปลี่ยนโหมดวาด Annotation (Bounding Box <-> Polygon <-> Blur <-> Pose <-> Landmark)
+  // 🌟 V2/V3/V8: switch the annotation drawing mode (Bounding Box <-> Polygon <-> Blur <-> Pose <-> Landmark)
   const handleAnnotationModeChange = (newMode) => {
     if (newMode === annotationMode) return;
     if (annotationMode === "polygon" && currentPolygonPoints.length > 0) {
       const confirmed = window.confirm(
-        "มีจุด Polygon ที่ยังวาดค้างอยู่ (ยังไม่ปิดรูป) การสลับโหมดจะล้างจุดเหล่านั้นทิ้ง ต้องการดำเนินการต่อหรือไม่?"
+        "There's an unfinished Polygon (not yet closed). Switching modes will discard those points. Do you want to continue?"
       );
       if (!confirmed) return;
       setCurrentPolygonPoints([]);
@@ -2322,14 +2204,14 @@ const deleteHoveredPolygonVertex = () => {
     }
     if (annotationMode === "keypoint" && currentPoseKeypoints.length > 0) {
       const confirmed = window.confirm(
-        "มีจุด Pose ที่ยังวาดค้างอยู่ (ยังไม่ครบ) การสลับโหมดจะล้างจุดเหล่านั้นทิ้ง ต้องการดำเนินการต่อหรือไม่?"
+        "There's an unfinished Pose (not yet complete). Switching modes will discard those points. Do you want to continue?"
       );
       if (!confirmed) return;
       setCurrentPoseKeypoints([]);
     }
     if (annotationMode === "landmark" && currentLandmarkPoints.length > 0) {
       const confirmed = window.confirm(
-        "มีจุด Landmark ที่ยังวาดค้างอยู่ (ยังไม่ครบ) การสลับโหมดจะล้างจุดเหล่านั้นทิ้ง ต้องการดำเนินการต่อหรือไม่?"
+        "There's an unfinished Landmark (not yet complete). Switching modes will discard those points. Do you want to continue?"
       );
       if (!confirmed) return;
       setCurrentLandmarkPoints([]);
@@ -2382,21 +2264,21 @@ const deleteHoveredPolygonVertex = () => {
 
     if (totalImagesSaved <= 20) {
       return {
-        text: `🔴 ข้อมูลยังน้อยเกินไป (มี ${totalImagesSaved} ภาพ ) โมเดลอาจจะเกิดอาการ Overfitting สูง`,
+        text: `🔴 Not enough data yet (${totalImagesSaved} images) — the model may suffer from severe overfitting`,
         color: "#EF4444",
         bg: "#FEF2F2",
         percent: Math.min((totalImagesSaved / 100) * 100, 20)
       };
     } else if (totalImagesSaved <= 80) {
       return {
-        text: `🟡 ข้อมูลระดับเริ่มต้น (มี ${totalImagesSaved} ภาพ )`,
+        text: `🟡 Starter-level data (${totalImagesSaved} images)`,
         color: "#F59E0B",
         bg: "#FEF3C7",
         percent: (totalImagesSaved / 100) * 100
       };
     } else {
       return {
-        text: `🟢 ข้อมูลเพียงพอสำหรับระดับพื้นฐาน (มี ${totalImagesSaved} ภาพ) สามารถกดเข้าสู่ขั้นตอนการเทรนโมเดลได้เลย`,
+        text: `🟢 Enough data for a basic level (${totalImagesSaved} images) — you can proceed to the model training step`,
         color: "#10B981",
         bg: "#ECFDF5",
         percent: 100
@@ -2432,23 +2314,24 @@ const deleteHoveredPolygonVertex = () => {
 
   const AUGMENTATION_MODES = [
     { value: "original", label: "📦 Original" },
-    { value: "rotation_-10", label: "↩️ หมุน -10°" },
-    { value: "rotation_10", label: "↪️ หมุน 10°" },
-    { value: "zoom_in", label: "🔍 ซูมเข้า" },
-    { value: "brightness_dark", label: "🌙 มืดลง" },
-    { value: "brightness_bright", label: "☀️ สว่างขึ้น" },
-    { value: "grayscale", label: "⚫ ขาวดำ" },
-    { value: "blur", label: "💧 เบลอ" },
-    { value: "contrast_low", label: "🔅 Contrast ต่ำ" },
-    { value: "contrast_high", label: "🔆 Contrast สูง" },
-    { value: "saturation_low", label: "🎨 สีจาง" },
-    { value: "saturation_high", label: "🌈 สีจัด" }
+    { value: "rotation_-10", label: "↩️ Rotate -10°" },
+    { value: "rotation_10", label: "↪️ Rotate 10°" },
+    { value: "zoom_in", label: "🔍 Zoom In" },
+    { value: "brightness_dark", label: "🌙 Darker" },
+    { value: "brightness_bright", label: "☀️ Brighter" },
+    { value: "grayscale", label: "⚫ Grayscale" },
+    { value: "blur", label: "💧 Blur" },
+    { value: "contrast_low", label: "🔅 Low Contrast" },
+    { value: "contrast_high", label: "🔆 High Contrast" },
+    { value: "saturation_low", label: "🎨 Low Saturation" },
+    { value: "saturation_high", label: "🌈 High Saturation" }
   ];
 
   // ==========================================================
-  // 🔒 V3: "อบ" การเบลอลงพิกเซลจริงของภาพแบบถาวร ก่อนอัปโหลดขึ้น Server
-  // ใช้เทคนิค Pixelate/Mosaic (ย่อภาพเฉพาะจุดให้เล็กมากแล้วขยายกลับแบบไม่ smooth)
-  // แทน gaussian blur ธรรมดา เพราะ pixelate รับประกันว่าย้อนกลับไปดูใบหน้า/ข้อมูลเดิมไม่ได้เลย
+  // 🔒 V3: "bake" the blur permanently into the actual image pixels before uploading to the server
+  // Uses the Pixelate/Mosaic technique (shrink just that area down heavily then scale it back up
+  // without smoothing) instead of ordinary gaussian blur, because pixelation guarantees the
+  // original face/data can never be recovered from it
   // ==========================================================
   const applyBlurRegionsToImage = (imageDataUrl, regions, containerRect, naturalW, naturalH) => {
     return new Promise((resolve, reject) => {
@@ -2508,30 +2391,30 @@ const deleteHoveredPolygonVertex = () => {
     const serverUrl = localStorage.getItem("cloud_url");
     const email = localStorage.getItem("email");
 
-    // 🆕 เช็ค quota ก่อนสร้างภาพ 12 แบบ
+    // 🆕 Check quota before generating the 12 variants
   if (isOverImageQuota) {
-    alert(`คุณใช้โควตารูปภาพครบแล้ว (${totalImagesUsed}/${maxImages} รูป) กรุณาอัปเกรดแผน`);
+    alert(`You've used up your image quota (${totalImagesUsed}/${maxImages} images). Please upgrade your plan.`);
     return;
   }
   if (willExceedOnSave) {
     const proceed = window.confirm(
-      `เหลือโควตาอีก ${remainingImages} รูป แต่การบันทึกครั้งนี้จะสร้าง ${SAVE_MULTIPLIER} รูป อาจเกินโควตาได้\n\nดำเนินการต่อหรือไม่?`
+      `You have ${remainingImages} images left in your quota, but this save will create ${SAVE_MULTIPLIER} images and may exceed it.\n\nDo you want to continue?`
     );
     if (!proceed) return;
   }
 
     if (!serverUrl || !email) {
-      alert("กรุณาตรวจสอบการตั้งค่า Cloud URL และการ Login ของคุณ");
+      alert("Please check your Cloud URL settings and make sure you're logged in.");
       return;
     }
 
     if (boxes.length === 0 && polygons.length === 0 && poses.length === 0 && landmarks.length === 0) {
-      alert("กรุณาวาด Bounding Box, Polygon, Pose หรือ Landmark อย่างน้อย 1 รายการก่อนบันทึก");
+      alert("Please draw at least one Bounding Box, Polygon, Pose, or Landmark before saving.");
       return;
     }
 
     if (allModesSaved) {
-      alert("ภาพนี้ถูกบันทึกครบทั้ง 12 แบบไปแล้ว กรุณาถ่าย/อัปโหลดภาพใหม่ก่อน");
+      alert("This image has already been saved in all 12 variants. Please capture/upload a new image first.");
       return;
     }
 
@@ -2541,8 +2424,8 @@ const deleteHoveredPolygonVertex = () => {
     const container = imageContainerRef.current.getBoundingClientRect();
 
     try {
-      // 🔒 V3: เบลอพื้นที่ที่วาดไว้ลงพิกเซลจริงของภาพก่อนส่ง (ถ้าไม่มี blur region เลย
-      // ฟังก์ชันนี้จะคืนภาพต้นฉบับกลับมาเหมือนเดิม ไม่กระทบ flow เดิมแต่อย่างใด)
+      // 🔒 V3: bake the drawn areas into the actual image pixels before sending (if there are
+      // no blur regions at all, this function just returns the original image, no change to the existing flow)
       const finalImageData = await applyBlurRegionsToImage(
         capturedImage,
         blurRegions,
@@ -2559,7 +2442,6 @@ const deleteHoveredPolygonVertex = () => {
         canvas_height: Math.round(container.height),
         bounding_boxes: boxes.map(box => ({
           label: box.label,
-          description: box.description || "", // 🆕 คำบรรยายวัตถุ (context เพิ่มเติมสำหรับ VLM)
           x: Math.round(box.x),
           y: Math.round(box.y),
           w: Math.round(box.w),
@@ -2567,13 +2449,11 @@ const deleteHoveredPolygonVertex = () => {
         })),
         polygons: polygons.map(poly => ({
           label: poly.label,
-          description: poly.description || "", // 🆕
           points: poly.points.map(p => ({ x: Math.round(p.x), y: Math.round(p.y) }))
         })),
-        // 🦴 V8: ส่งชุด pose keypoints พร้อมชื่อจุดและเส้นเชื่อม (skeleton) อ้างอิงตาม index
+        // 🦴 V8: send the pose keypoint set with point names and connecting lines (skeleton) referenced by index
         poses: poses.map(pose => ({
           label: pose.label,
-          description: pose.description || "", // 🆕
           keypoints: pose.keypoints.map(p => ({
             name: p.name,
             x: Math.round(p.x),
@@ -2582,10 +2462,9 @@ const deleteHoveredPolygonVertex = () => {
           })),
           skeleton: POSE_TEMPLATE.connections
         })),
-        // 📍 V8: ส่งชุด landmark พร้อม template ที่ใช้ (face/hand) และเส้นเชื่อมของ template นั้น
+        // 📍 V8: send the landmark set along with the template used (face/hand) and that template's connecting lines
         landmarks: landmarks.map(lm => ({
           label: lm.label,
-          description: lm.description || "", // 🆕
           template: lm.templateType,
           points: lm.points.map(p => ({
             name: p.name,
@@ -2611,18 +2490,15 @@ const deleteHoveredPolygonVertex = () => {
         localStorage.setItem("total_images", newTotal);
         setAllModesSaved(true);
 
-        alert(`บันทึกสำเร็จ ${totalSaved}/12 แบบ! (สะสมรวม: ${newTotal} ภาพ)`);
+        alert(`Saved successfully: ${totalSaved}/12 variants! (Total so far: ${newTotal} images)`);
 
         fetchProjectGallery();
-
-        // 🆕 บันทึกสำเร็จแล้ว ล้างภาพ + annotation ที่ Canvas ทิ้งทันที เตรียมพร้อมถ่าย/อัปโหลดภาพถัดไป
-        clearWorkspace();
       } else {
-        alert(`Server Error: ${result.message || "เกิดข้อผิดพลาดคลังข้อมูล"}`);
+        alert(`Server Error: ${result.message || "A data storage error occurred"}`);
       }
     } catch (error) {
       console.error("Upload error:", error);
-      alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบ Network ของคุณ");
+      alert("Couldn't connect to the server. Please check your network.");
     } finally {
       setIsSubmitting(false);
     }
@@ -2636,22 +2512,9 @@ const deleteHoveredPolygonVertex = () => {
   const annotationCount = boxes.length + polygons.length + poses.length + landmarks.length;
   const saveDisabled = annotationCount === 0 || isSubmitting || allModesSaved;
 
-  // 🆕🏷️ นับจำนวน annotation แยกตามชื่อ label (รวมทุกเครื่องมือ: Box/Polygon/Pose/Landmark)
-  // ใช้โชว์เป็นรายการลอยอยู่มุมขวาบนของรูปภาพ ให้เห็นภาพรวมของภาพที่กำลังทำอยู่ทันที
-  const annotationLabelCounts = (() => {
-    const counts = new Map();
-    [...boxes, ...polygons, ...poses, ...landmarks].forEach((item) => {
-      const name = (item.label || "").trim() || "(ไม่มีชื่อ)";
-      counts.set(name, (counts.get(name) || 0) + 1);
-    });
-    return Array.from(counts.entries())
-      .map(([label, count]) => ({ label, count }))
-      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "th"));
-  })();
-
   const isEsp32StreamShown = cameraSource === "esp32" && !!esp32IpConnected;
 
-  const SAVE_MULTIPLIER = 12; // saveAllModesToDataset สร้าง 12 แบบ/ครั้ง
+  const SAVE_MULTIPLIER = 12; // saveAllModesToDataset generates 12 variants per save
 const totalImagesUsed = planUsage?.totalImages ?? null;
 const maxImages = planLimits?.maxImages ?? null;
 const hasQuotaInfo = totalImagesUsed != null && maxImages != null;
@@ -2673,30 +2536,8 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 25 }}>
         <div>
-          <div>
-            <button onClick={() => navigate(-1)} style={{ padding: "8px 16px", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 8, cursor: "pointer", marginRight: 15 }}>🎒 กลับหน้าหลัก</button>
-            <span style={{ fontSize: 18, fontWeight: "bold", color: "#333" }}>Project: {project}</span>
-          </div>
-          {/* 🆕🧠 เลือกว่า "ตั้งใจ" จะเทรนด้วย YOLOv8 หรือ Qwen2-VL เป็นหลัก
-              — ไม่ได้ซ่อนช่อง "คำบรรยาย" อีกต่อไป (เก็บไว้เผื่อรองรับเทรน
-              Qwen2-VL/โมเดล VLA ในอนาคตได้เลย โดยไม่ต้องย้อนกลับมา annotate
-              ใหม่) แค่เปลี่ยนข้อความ hint ใต้ช่องคำบรรยายให้ตรงกับที่เลือก */}
-          <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: "bold", color: "#475569" }}>🧠 เทรนด้วย:</span>
-            <select
-              value={trainTarget}
-              onChange={(e) => setTrainTarget(e.target.value)}
-              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", fontSize: 13, background: "#fff", cursor: "pointer" }}
-            >
-              <option value="yolov8">🚀 YOLOv8 (Detection / Segmentation)</option>
-              <option value="qwen2vl">🧠 Qwen2-VL (Vision Language Model)</option>
-            </select>
-            <span style={{ fontSize: 11, color: trainTarget === "qwen2vl" ? "#7C3AED" : "#94A3B8" }}>
-              {trainTarget === "qwen2vl"
-                ? "💡 กรอกคำบรรยายแต่ละจุดด้านล่าง"
-                : "💡 คำบรรยายด้านล่างไม่บังคับสำหรับ YOLOv8 แต่กรอกไว้ได้เผื่อเทรนโมเดลอื่นทีหลัง"}
-            </span>
-          </div>
+          <button onClick={() => navigate(-1)} style={{ padding: "8px 16px", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 8, cursor: "pointer", marginRight: 15 }}>🎒 Back to Home</button>
+          <span style={{ fontSize: 18, fontWeight: "bold", color: "#333" }}>Project: {project}</span>
         </div>
         <h2 style={{ margin: 0, color: "#E28743" }}>{pageTitle}</h2>
       </div>
@@ -2704,11 +2545,11 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 25, marginBottom: 25 }}>
 
         <div style={{ background: "#fff", padding: 20, borderRadius: 15, border: "1px solid #E5E7EB", boxShadow: "0 4px 12px rgba(0,0,0,.04)" }}>
-          <h3 style={{ marginTop: 0, marginBottom: 15 }}>📷 Input Source (ภาพที่นำมาทำ Annotation)</h3>
+          <h3 style={{ marginTop: 0, marginBottom: 15 }}>📷 Input Source (image used for Annotation)</h3>
 
           <div style={{ marginBottom: 15, padding: 12, background: "#EFF6FF", borderRadius: 10, border: "1px solid #BFDBFE" }}>
             <div style={{ fontSize: 13, fontWeight: "bold", color: "#1E40AF", marginBottom: 8 }}>
-              🎯  กำหนดขนาดภาพให้เหมาะสมในการนำไปใช้งาน
+              🎯  Set the ideal image size for your deployment
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input
@@ -2719,7 +2560,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                 value={targetImageSize}
                 disabled={!!capturedImage}
                 onChange={(e) => setTargetImageSize(e.target.value)}
-                title={capturedImage ? "ล้างภาพปัจจุบันก่อน ถึงจะเปลี่ยนขนาดได้" : ""}
+                title={capturedImage ? "Clear the current image first before you can change the size" : ""}
                 style={{
                   width: 100,
                   padding: "8px 10px",
@@ -2735,14 +2576,14 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
             </div>
             {capturedImage && (
               <p style={{ fontSize: 11, color: "#94A3B8", margin: "6px 0 0" }}>
-                🔒 ล็อกไว้ตอนมีภาพอยู่ในพื้นที่ทำงาน — กด "ล้างภาพนี้ทิ้ง" ทางขวาก่อน ถ้าต้องการเปลี่ยนขนาด
+                🔒 Locked while an image is in the workspace — click "Discard this image" on the right first if you want to change the size
               </p>
             )}
           </div>
 
           <div style={{ marginBottom: 15, padding: 12, background: "#F8FAFC", borderRadius: 10, border: "1px solid #E2E8F0" }}>
             <div style={{ fontSize: 13, fontWeight: "bold", color: "#475569", marginBottom: 8 }}>
-              🏷️ เพิ่มชื่อคลาส (Label) ล่วงหน้า
+              🏷️ Pre-add class names (Labels)
             </div>
             <div style={{ display: "flex", gap: 8, marginBottom: knownClasses.length > 0 ? 10 : 0 }}>
               <input
@@ -2755,7 +2596,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                     addKnownClassFromInput();
                   }
                 }}
-                placeholder="เช่น ฝาสีแดง"
+                placeholder="e.g. red_cap, button, green_light"
                 style={{ flex: 1, padding: "8px 10px", fontSize: 13, borderRadius: 8, border: "1px solid #CBD5E1" }}
               />
               <button
@@ -2773,71 +2614,42 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   whiteSpace: "nowrap"
                 }}
               >
-                ➕ เพิ่ม
+                ➕ Add
               </button>
             </div>
 
             {knownClasses.length > 0 ? (
-              <>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {knownClasses.map((c, i) => {
-                    const isActive = activeClass === c;
-                    const hasHotkey = i < 9;
-                    return (
-                      <span
-                        key={c}
-                        onClick={() => toggleActiveClass(c)}
-                        title={isActive ? "คลาสที่กำลัง active อยู่ — คลิกซ้ำเพื่อยกเลิก" : hasHotkey ? `ตั้งเป็น Active class (หรือกดคีย์ลัด ${i + 1})` : "ตั้งเป็น Active class"}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 5,
-                          background: isActive ? "#0078D7" : "#EAF3FC",
-                          color: isActive ? "#fff" : "#0078D7",
-                          fontSize: 12,
-                          fontWeight: "bold",
-                          padding: "3px 8px",
-                          borderRadius: 999,
-                          border: isActive ? "1px solid #0078D7" : "1px solid #BFDBFE",
-                          cursor: "pointer",
-                          boxShadow: isActive ? "0 0 0 2px rgba(0,120,215,0.25)" : "none"
-                        }}
-                      >
-                        {hasHotkey && (
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              width: 15,
-                              height: 15,
-                              borderRadius: "50%",
-                              fontSize: 10,
-                              fontWeight: "bold",
-                              background: isActive ? "rgba(255,255,255,0.25)" : "#0078D7",
-                              color: "#fff"
-                            }}
-                          >
-                            {i + 1}
-                          </span>
-                        )}
-                        {c}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); removeKnownClass(c); }}
-                          title="ลบชื่อคลาสนี้ออกจากรายการ"
-                          style={{ background: "none", border: "none", color: isActive ? "#fff" : "#0078D7", cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1 }}
-                        >
-                          ✕
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
-                 
-              </>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {knownClasses.map((c) => (
+                  <span
+                    key={c}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      background: "#EAF3FC",
+                      color: "#0078D7",
+                      fontSize: 12,
+                      fontWeight: "bold",
+                      padding: "3px 8px",
+                      borderRadius: 999,
+                      border: "1px solid #BFDBFE"
+                    }}
+                  >
+                    {c}
+                    <button
+                      onClick={() => removeKnownClass(c)}
+                      title="Remove this class name from the list"
+                      style={{ background: "none", border: "none", color: "#0078D7", cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1 }}
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+              </div>
             ) : (
               <p style={{ fontSize: 11.5, color: "#94A3B8", margin: 0 }}>
-                ยังไม่มีคลาสที่เพิ่มไว้ — พิมพ์ชื่อแล้วกด "เพิ่ม" หรือ Enter
+                No classes added yet — type a name and press "Add" or Enter
               </p>
             )}
           </div>
@@ -2865,7 +2677,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                 checked={cameraSource === "mobile"}
                 onChange={() => handleSelectCameraSource("mobile")}
               />
-              📱 กล้องมือถือ (สแกน QR)
+              📱 Mobile Camera (scan QR)
             </label>
           </div>
 
@@ -2883,11 +2695,11 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   onClick={() => setIsCameraActive(!isCameraActive)}
                   style={{ flex: 1, padding: "12px", background: isCameraActive ? "#EF4444" : "#0078D7", color: "white", border: "none", borderRadius: 10, fontWeight: "bold", cursor: "pointer" }}
                 >
-                  {isCameraActive ? "🛑 ปิดกล้องสด" : "🎥 เปิดกล้อง "}
+                  {isCameraActive ? "🛑 Turn off live camera" : "🎥 Turn on camera "}
                 </button>
 
                 <label style={{ flex: 1, padding: "12px", background: "#10B981", color: "white", borderRadius: 10, fontWeight: "bold", cursor: "pointer", textAlign: "center" }}>
-                  {"📂 ภาพจาก PC "}
+                  {"📂 Image from PC "}
                   <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} />
                 </label>
               </div>
@@ -2913,29 +2725,29 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   }}
                 >
                   {mobileSessionId
-                    ? (mobileStatus === "connected" ? "✅ เชื่อมต่อมือถือแล้ว (กดเพื่อสร้าง QR ใหม่)" : "🔄 สร้าง QR Code ใหม่")
-                    : "📱 สร้าง QR Code เพื่อเชื่อมมือถือ"}
+                    ? (mobileStatus === "connected" ? "✅ Mobile connected (click to generate a new QR)" : "🔄 Generate a new QR Code")
+                    : "📱 Generate a QR Code to connect your phone"}
                 </button>
               </div>
 
               {mobileStatus === "waiting" && (
                 <p style={{ color: "#D97706", fontSize: 12.5, margin: "0 0 8px" }}>
-                  ⏳ รอมือถือสแกน QR แล้วเปิดกล้อง...
+                  ⏳ Waiting for the phone to scan the QR and open its camera...
                 </p>
               )}
               {mobileStatus === "error" && (
                 <p style={{ color: "#EF4444", fontSize: 12.5, margin: "0 0 8px" }}>
-                  ❌ เชื่อมต่อไม่สำเร็จ กรุณาตรวจสอบ Network หรือกดสร้าง QR ใหม่
+                  ❌ Connection failed. Please check your network or generate a new QR.
                 </p>
               )}
               {mobileStatus === "connected" && (
                 <p style={{ color: "#10B981", fontSize: 12.5, margin: "0 0 8px" }}>
-                  ✅ มือถือเชื่อมต่อและกำลังส่งภาพเข้ามาแล้ว
+                  ✅ Phone connected and sending images
                 </p>
               )}
 
               <label style={{ display: "block", padding: "12px", background: "#10B981", color: "white", borderRadius: 10, fontWeight: "bold", cursor: "pointer", textAlign: "center" }}>
-                {"📂 ภาพจาก PC "}
+                {"📂 Image from PC "}
                 <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} />
               </label>
 
@@ -2955,7 +2767,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleConnectEsp32();
                   }}
-                  placeholder="192.168.43.181/stream (ESP32-CAM) หรือ 192.168.1.50 (กล้อง IP ทั่วไป)"
+                  placeholder="192.168.43.181/stream (ESP32-CAM) or 192.168.1.50 (regular IP camera)"
                   style={{ flex: 1, padding: 12, fontSize: 15, borderRadius: 8, border: "1px solid #ccc" }}
                 />
 
@@ -2973,26 +2785,26 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                     whiteSpace: "nowrap"
                   }}
                 >
-                  {esp32Status === "connected" ? "✅ เชื่อมต่อแล้ว" : "🔌 เชื่อมต่อ"}
+                  {esp32Status === "connected" ? "✅ Connected" : "🔌 Connect"}
                 </button>
               </div>
 
               {esp32Status === "connecting" && (
-                <p style={{ color: "#D97706", fontSize: 12.5, margin: "0 0 8px" }}>⏳ กำลังเชื่อมต่อ...</p>
+                <p style={{ color: "#D97706", fontSize: 12.5, margin: "0 0 8px" }}>⏳ Connecting...</p>
               )}
               {esp32Status === "error" && (
                 <p style={{ color: "#EF4444", fontSize: 12.5, margin: "0 0 8px" }}>
-                  ❌ ไม่สามารถเชื่อมต่อได้ กรุณาตรวจสอบ IP และเครือข่าย
+                  ❌ Couldn't connect. Please check the IP and network.
                 </p>
               )}
               {esp32Status === "connected" && (
                 <p style={{ color: "#10B981", fontSize: 12.5, margin: "0 0 8px" }}>
-                  ✅ เชื่อมต่อกับ {esp32IpConnected} สำเร็จ
+                  ✅ Connected to {esp32IpConnected} successfully
                 </p>
               )}
 
               <label style={{ display: "block", padding: "12px", background: "#10B981", color: "white", borderRadius: 10, fontWeight: "bold", cursor: "pointer", textAlign: "center" }}>
-                {"📂 ดึงภาพจากภายนอก"}
+                {"📂 Pull an external image"}
                 <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} />
               </label>
 
@@ -3015,7 +2827,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
               ) : (
                 <div style={{ color: "#666", textAlign: "center" }}>
                   <p style={{ fontSize: 48, margin: 0 }}>📹</p>
-                  <p style={{ color: "#aaa" }}>กดเปิดกล้อง หรือคลิกอัปโหลดภาพทางด้านบน</p>
+                  <p style={{ color: "#aaa" }}>Click to turn on the camera, or click to upload an image above</p>
                 </div>
               )
 
@@ -3047,17 +2859,17 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                     <div style={{ textAlign: "center", padding: 16 }}>
                       <img
                         src={mobileQrUrl}
-                        alt="QR Code เชื่อมมือถือ"
+                        alt="QR Code to connect phone"
                         style={{ width: 180, height: 180, borderRadius: 10, background: "#fff", padding: 8 }}
                       />
                       <p style={{ color: "#fff", fontSize: 12.5, marginTop: 10, marginBottom: 0 }}>
-                        📱 เปิดกล้องมือถือแล้วสแกน QR (ใช้ google Lens ในการสแกน QR Code)
+                        📱 Open your phone's camera and scan the QR (use Google Lens to scan the QR Code)
                       </p>
                       {mobileStatus === "waiting" && (
-                        <p style={{ color: "#FBBF24", fontSize: 11.5, marginTop: 4 }}>⏳ รอมือถือเชื่อมต่อ...</p>
+                        <p style={{ color: "#FBBF24", fontSize: 11.5, marginTop: 4 }}>⏳ Waiting for the phone to connect...</p>
                       )}
                       {mobileStatus === "error" && (
-                        <p style={{ color: "#F87171", fontSize: 11.5, marginTop: 4 }}>❌ เชื่อมต่อไม่สำเร็จ ลองกดสร้าง QR ใหม่</p>
+                        <p style={{ color: "#F87171", fontSize: 11.5, marginTop: 4 }}>❌ Connection failed. Try generating a new QR.</p>
                       )}
                     </div>
                   )}
@@ -3065,7 +2877,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
               ) : (
                 <div style={{ color: "#666", textAlign: "center", padding: 20 }}>
                   <p style={{ fontSize: 48, margin: 0 }}>📱</p>
-                  <p style={{ color: "#aaa" }}>กดปุ่มสร้าง QR Code เพื่อเชื่อมมือถือ ทางด้านบน แล้วใช้มือถือ (google Lens ในการสแกน QR Code)</p>
+                  <p style={{ color: "#aaa" }}>Click "Generate a QR Code to connect your phone" above, then use your phone (Google Lens to scan the QR Code)</p>
                 </div>
               )
 
@@ -3095,20 +2907,20 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
 
                   {esp32Status === "connecting" && (
                     <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.55)", color: "#fff", fontSize: 14 }}>
-                      ⏳ กำลังเชื่อมต่อ...
+                      ⏳ Connecting...
                     </div>
                   )}
 
                   {esp32Status === "error" && (
                     <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.55)", color: "#fff", fontSize: 14, textAlign: "center", padding: 20 }}>
-                      ❌ เชื่อมต่อไม่สำเร็จ กรุณาตรวจสอบ IP และเครือข่าย
+                      ❌ Couldn't connect. Please check the IP and network.
                     </div>
                   )}
                 </>
               ) : (
                 <div style={{ color: "#666", textAlign: "center", padding: 20 }}>
                   <p style={{ fontSize: 48, margin: 0 }}>📹</p>
-                  <p style={{ color: "#aaa" }}>กรอก IP แล้วกด "เชื่อมต่อ" ก่อนเริ่มใช้งานกล้อง</p>
+                  <p style={{ color: "#aaa" }}>Enter the IP and click "Connect" before using the camera</p>
                 </div>
               )
 
@@ -3135,19 +2947,58 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <h3 style={{ marginTop: 0, marginBottom: 5 }}>{canvasTitle}</h3>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <button
+                  onClick={() => setIsCanvasFullscreen(v => !v)}
+                  title={isCanvasFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen"}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    background: isCanvasFullscreen ? "#0078D7" : "#F3F4F6",
+                    color: isCanvasFullscreen ? "#fff" : "#444",
+                    border: isCanvasFullscreen ? "1px solid #0078D7" : "1px solid #d1d5db",
+                    borderRadius: 8,
+                    padding: "5px 12px",
+                    fontSize: 12.5,
+                    fontWeight: "bold",
+                    cursor: "pointer"
+                  }}
+                >
+                  {isCanvasFullscreen ? "🗗 Exit fullscreen" : "⛶ Fullscreen"}
+                </button>
+                 
+                 <button
+               onClick={() => setShowAnnotationGuide(true)}
+                 style={{ background: "none", border: "none", color: "#0078D7", fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
+                        >
+                 📖 Annotation tool usage guide
+                </button>
+
+                  {capturedImage && (
+                    <button
+                     onClick={clearWorkspace}
+                   style={{ background: "none", border: "none", color: "#94A3B8", fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
+                      >
+                 🗑️ Discard this image
+                    </button>
+                    )}
+
+
+              </div>
             </div>
 
             {capturedImage && imgNaturalSize.width > 0 && (
               <p style={{ fontSize: 11.5, color: "#0078D7", marginTop: 0, marginBottom: 8 }}>
-                📐 ขนาดภาพที่จะบันทึกจริง: {imgNaturalSize.width}×{imgNaturalSize.height}px
+                📐 Actual size to be saved: {imgNaturalSize.width}×{imgNaturalSize.height}px
               </p>
             )}
 
             {/* ==========================================================
-                🧰 V7/V8: Toolbar ไอคอนเลือกเครื่องมือวาด (แทน radio row เดิม)
-                เครื่องมือที่กำลังใช้งานอยู่ไฮไลต์ด้วยพื้นหลังสีของตัวเอง
-                ส่วนสีของแต่ละเครื่องมือ (dropdown) แยกไปโชว์เป็นแถวเดียว
-                ด้านล่าง toolbar เฉพาะเครื่องมือที่กำลังเลือกอยู่เท่านั้น
+                🧰 V7/V8: Icon toolbar for choosing the drawing tool (replaces the old radio row)
+                The tool currently in use is highlighted with its own background color.
+                Each tool's color (dropdown) is shown as a single row below the toolbar,
+                only for the tool that's currently selected.
                 ========================================================== */}
             <div
               style={{
@@ -3205,7 +3056,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
               </button>
               <button
                 onClick={() => handleAnnotationModeChange("keypoint")}
-                title="Keypoint Detection / Pose Estimation (โครงกระดูก)"
+                title="Keypoint Detection / Pose Estimation (skeleton)"
                 style={{
                   width: 44,
                   height: 44,
@@ -3226,7 +3077,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
               </button>
               <button
                 onClick={() => handleAnnotationModeChange("landmark")}
-                title="Keypoint / Landmark Detection (หน้า/มือ ฯลฯ)"
+                title="Keypoint / Landmark Detection (face/hand, etc.)"
                 style={{
                   width: 44,
                   height: 44,
@@ -3247,7 +3098,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
               </button>
               <button
                 onClick={() => handleAnnotationModeChange("blur")}
-                title="Blur (ปิดบังข้อมูลส่วนตัว)"
+                title="Blur (hide private data)"
                 style={{
                   width: 44,
                   height: 44,
@@ -3268,12 +3119,12 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
               </button>
             </div>
 
-            {/* 🎨 แถวเลือกสี — โชว์แค่แถวเดียวตรงกับเครื่องมือที่กำลังเลือกอยู่ในตอนนั้น
-                (แทนที่จะซ่อน/โชว์ dropdown แยกกันแบบเดิม รวมเป็นจุดเดียว
-                ให้ตรงกับ toolbar ด้านบน อ่านง่ายกว่าเดิม) */}
+            {/* 🎨 Color-selection row — only shows the single row matching whichever tool is
+                currently selected (instead of hiding/showing separate dropdowns like before,
+                combined into a single spot that matches the toolbar above, easier to read) */}
             {annotationMode === "bbox" && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, fontSize: 12.5, color: "#0078D7" }}>
-                🎨 สีกล่อง (Bounding Box):
+                🎨 Box color (Bounding Box):
                 <select
                   value={boxColorChoice}
                   onChange={(e) => setBoxColorChoice(e.target.value)}
@@ -3296,7 +3147,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
 
             {annotationMode === "polygon" && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, fontSize: 12.5, color: "#0078D7" }}>
-                🎨 สี Polygon:
+                🎨 Polygon color:
                 <select
                   value={polygonColorChoice}
                   onChange={(e) => setPolygonColorChoice(e.target.value)}
@@ -3319,7 +3170,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
 
             {isKeypointMode && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, fontSize: 12.5, color: "#0EA5E9", flexWrap: "wrap" }}>
-                🎨 สีโครงกระดูก (Pose):
+                🎨 Skeleton color (Pose):
                 <select
                   value={poseColorChoice}
                   onChange={(e) => setPoseColorChoice(e.target.value)}
@@ -3338,15 +3189,15 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   ))}
                 </select>
                 <span style={{ color: "#94A3B8", fontSize: 11.5 }}>
-                  จุดที่ {currentPoseKeypoints.length}/{POSE_TEMPLATE.names.length}
-                  {currentPoseKeypoints.length > 0 && ` (ต่อไป: ${POSE_TEMPLATE.names[currentPoseKeypoints.length]})`}
+                  Point {currentPoseKeypoints.length}/{POSE_TEMPLATE.names.length}
+                  {currentPoseKeypoints.length > 0 && ` (next: ${POSE_TEMPLATE.names[currentPoseKeypoints.length]})`}
                 </span>
               </div>
             )}
 
             {isLandmarkMode && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, fontSize: 12.5, color: "#8B5CF6", flexWrap: "wrap" }}>
-                🎨 สี Landmark:
+                🎨 Landmark color:
                 <select
                   value={landmarkColorChoice}
                   onChange={(e) => setLandmarkColorChoice(e.target.value)}
@@ -3364,12 +3215,12 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
                 </select>
-                <span style={{ marginLeft: 6 }}>แบบ:</span>
+                <span style={{ marginLeft: 6 }}>Type:</span>
                 <select
                   value={landmarkTemplateChoice}
                   onChange={(e) => {
                     if (currentLandmarkPoints.length > 0) {
-                      const confirmed = window.confirm("มีจุดที่วาดค้างอยู่ การเปลี่ยนแบบจะล้างจุดเหล่านั้นทิ้ง ต้องการดำเนินการต่อหรือไม่?");
+                      const confirmed = window.confirm("There are unfinished points. Changing the type will discard them. Do you want to continue?");
                       if (!confirmed) return;
                       setCurrentLandmarkPoints([]);
                     }
@@ -3390,15 +3241,15 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   ))}
                 </select>
                 <span style={{ color: "#94A3B8", fontSize: 11.5 }}>
-                  จุดที่ {currentLandmarkPoints.length}/{LANDMARK_TEMPLATES[landmarkTemplateChoice].names.length}
-                  {currentLandmarkPoints.length > 0 && ` (ต่อไป: ${LANDMARK_TEMPLATES[landmarkTemplateChoice].names[currentLandmarkPoints.length]})`}
+                  Point {currentLandmarkPoints.length}/{LANDMARK_TEMPLATES[landmarkTemplateChoice].names.length}
+                  {currentLandmarkPoints.length > 0 && ` (next: ${LANDMARK_TEMPLATES[landmarkTemplateChoice].names[currentLandmarkPoints.length]})`}
                 </span>
               </div>
             )}
 
             {isBlurMode && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, fontSize: 12.5, color: "#7C3AED" }}>
-                🎨 สีกรอบ Blur:
+                🎨 Blur box color:
                 <select
                   value={blurColor}
                   onChange={(e) => setBlurColor(e.target.value)}
@@ -3421,111 +3272,20 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
 
             <p style={{ fontSize: 13, color: "#666", marginTop: 0, marginBottom: 8 }}>
               {isSegmentation
-                ? "คลิกเพิ่มจุดขอบเขตวัตถุทีละจุด แล้วคลิกจุดแรกซ้ำ (หรือกดปุ่ม ✅ ปิดรูป) เพื่อปิด Polygon — ลากจุดที่วาดไว้แล้วเพื่อปรับตำแหน่งได้ — คลิกบนเส้นขอบของ Polygon ที่ปิดแล้วเพื่อแทรกจุดใหม่ตรงนั้น"
+                ? "Click to add boundary points one by one, then click the first point again (or press the ✅ Close Shape button) to close the Polygon — drag an existing point to reposition it — click on the edge of a closed Polygon to insert a new point there"
                 : isBlurMode
-                  ? "คลิกแล้วลากกรอบคลุมส่วนที่ต้องการเบลอ (เช่น ใบหน้าคน, ป้ายทะเบียน, เอกสาร) — ตอนกดบันทึก ภาพจริงจะถูกเบลอแบบถาวรลงพิกเซล ไม่สามารถกู้คืนกลับมาดูของเดิมได้อีก"
+                  ? "Click and drag a box over the area you want to blur (e.g. a person's face, license plate, document) — when you save, the actual image will be permanently blurred at the pixel level and cannot be recovered"
                   : isKeypointMode
-                    ? "คลิกวางจุดตามลำดับที่ระบบบอก (จมูก → ตา → หู → ไหล่ → ศอก → ข้อมือ → สะโพก → เข่า → ข้อเท้า) ระบบจะลากเส้นโครงกระดูกเชื่อมจุดให้อัตโนมัติ ครบ 17 จุดจะปิด pose ให้เอง — ลากจุดที่วางไว้แล้วเพื่อปรับตำแหน่งได้"
+                    ? "Click to place points in the order the system indicates (nose → eyes → ears → shoulders → elbows → wrists → hips → knees → ankles). The system automatically draws skeleton lines connecting the points; once all 17 points are placed the pose closes automatically — drag an existing point to reposition it"
                     : isLandmarkMode
-                      ? "เลือกแบบ (ใบหน้า/มือ) แล้วคลิกวางจุดตามลำดับที่ระบบบอก ระบบจะลากเส้นเชื่อมจุดให้อัตโนมัติตาม template ที่เลือก — ลากจุดที่วางไว้แล้วเพื่อปรับตำแหน่งได้"
-                      : "คลิกแล้วลากกรอบสี่เหลี่ยมครอบตำแหน่งวัตถุที่ต้องการตรวจจับ"}
+                      ? "Choose a type (face/hand), then click to place points in the order the system indicates. The system automatically draws connecting lines based on the selected template — drag an existing point to reposition it"
+                      : "Click and drag to draw a rectangle around the object you want to detect"}
             </p>
             {capturedImage && augMode !== "original" && (
               <p style={{ fontSize: 12, color: "#d73900", marginTop: 0, marginBottom: 8 }}>
-                * ต้องเลือกภาพให้เป็น 📦 Original ถึงจะวาดเครื่องมือได้
+                * You must select 📦 Original to be able to use the drawing tools
               </p>
             )}
-
-            {/* 🆕🎯 แถบ Active class บน Canvas — อยู่ในการ์ดเดียวกับปุ่ม ⛶ ขยายเต็มจอ
-                จึงใช้ได้ทั้งตอนโหมดปกติและตอนขยายเต็มจอ (ไม่ต้องย่อกลับมาเลือกคลาสที่การ์ดฝั่งซ้าย)
-                ทำเป็น dropdown เลือกทีละคลาส — ตัวเลือกในลิสต์ยังอ้างอิงลำดับเดียวกับคีย์ลัด 1-9 */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 8,
-                marginBottom: 10,
-                padding: "8px 10px",
-                background: activeClass ? "#EFF6FF" : "#F8FAFC",
-                borderRadius: 10,
-                border: activeClass ? "1px solid #BFDBFE" : "1px solid #E2E8F0"
-              }}
-            >
-              <span style={{ fontSize: 12.5, fontWeight: "bold", color: "#475569", whiteSpace: "nowrap" }}>
-                🎯 Active class:
-              </span>
-              <select
-                value={activeClass}
-                onChange={(e) => setActiveClass(e.target.value)}
-                disabled={knownClasses.length === 0}
-                style={{
-                  padding: "5px 10px",
-                  fontSize: 12.5,
-                  fontWeight: "bold",
-                  borderRadius: 8,
-                  border: activeClass ? "1px solid #0078D7" : "1px solid #CBD5E1",
-                  background: activeClass ? "#0078D7" : "#fff",
-                  color: activeClass ? "#fff" : "#374151",
-                  cursor: knownClasses.length === 0 ? "not-allowed" : "pointer",
-                  minWidth: 160
-                }}
-              >
-                <option value="">-- ไม่เลือก (ใช้ค่าเริ่มต้น) --</option>
-                {knownClasses.map((c, i) => (
-                  <option key={c} value={c}>
-                    {i < 9 ? `${i + 1}. ${c}` : c}
-                  </option>
-                ))}
-              </select>
-              {knownClasses.length === 0 ? (
-                <span style={{ fontSize: 11.5, color: "#94A3B8" }}>
-                  ยังไม่มีคลาสให้เลือก — เพิ่มชื่อคลาสที่การ์ด "Input Source" ฝั่งซ้ายก่อน
-                </span>
-              ) : (
-                <span style={{ fontSize: 11.5, color: "#94A3B8" }} />
-              )}
-
-              {/* 🆕 ย้ายปุ่ม ⛶ ขยายเต็มจอ / 📖 คู่มือ / 🗑️ ล้างภาพนี้ทิ้ง มาไว้ที่แถบ Active class
-                  (ย้ายจากหัวการ์ดเดิม) เพื่อให้ใช้งานได้ในจุดเดียวกับตอนตั้ง active class */}
-              <div style={{ display: "flex", alignItems: "center", gap: 14, marginLeft: "auto" }}>
-                <button
-                  onClick={() => setIsCanvasFullscreen(v => !v)}
-                  title={isCanvasFullscreen ? "ย่อกลับขนาดปกติ (Esc)" : "ขยายเต็มจอ"}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 5,
-                    background: isCanvasFullscreen ? "#0078D7" : "#F3F4F6",
-                    color: isCanvasFullscreen ? "#fff" : "#444",
-                    border: isCanvasFullscreen ? "1px solid #0078D7" : "1px solid #d1d5db",
-                    borderRadius: 8,
-                    padding: "5px 12px",
-                    fontSize: 12.5,
-                    fontWeight: "bold",
-                    cursor: "pointer"
-                  }}
-                >
-                  {isCanvasFullscreen ? "🗗 ย่อกลับ" : "⛶ ขยายเต็มจอ"}
-                </button>
-
-                <button
-                  onClick={() => setShowAnnotationGuide(true)}
-                  style={{ background: "none", border: "none", color: "#0078D7", fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
-                >
-                  📖 คู่มือการใช้เครื่องมือสร้าง Annotation
-                </button>
-
-                {capturedImage && (
-                  <button
-                    onClick={clearWorkspace}
-                    style={{ background: "none", border: "none", color: "#94A3B8", fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
-                  >
-                    🗑️ ล้างภาพนี้ทิ้ง
-                  </button>
-                )}
-              </div>
-            </div>
 
             <div style={{ position: "relative" }}>
               <div
@@ -3599,7 +3359,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                     style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none" }}
                   >
                     {polygons.map((poly) => {
-                      const polyColor = poly.colorOverride || getColorForLabel(poly.label); // 🎨 V4/V6: สีที่เลือกเองมาก่อน ไม่งั้นใช้สีตาม label
+                      const polyColor = poly.colorOverride || getColorForLabel(poly.label); // 🎨 V4/V6: a manually chosen color takes priority, otherwise use the label-based color
                       return (
                       <g key={poly.id}>
                         <polygon
@@ -3707,7 +3467,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                                     hoveredLabelRef.current = null;
                                   }
                                 }}
-                                title="คลิกเพื่อแก้ชื่อ label — Ctrl+ลาก: ย้ายเฉพาะป้าย — Ctrl+C คัดลอก / Ctrl+V วาง"
+                                title="Click to edit the label — Ctrl+drag: move just the label — Ctrl+C copy / Ctrl+V paste"
                                 style={{ display: "inline-block", background: polyColor, color: "#fff", fontSize: 11, fontWeight: "bold", padding: "2px 6px", borderRadius: 4, whiteSpace: "nowrap", cursor: "pointer" }}
                               >
                                 {poly.label}
@@ -3743,7 +3503,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                       </g>
                     )}
 
-                    {/* 🦴 V8: วาดโครงกระดูก Pose ที่ปิดสมบูรณ์แล้วทั้งหมด — เส้นเชื่อมตาม POSE_TEMPLATE.connections ก่อน แล้วค่อยวาดจุดทับด้านบน */}
+                    {/* 🦴 V8: draw all fully-closed Pose skeletons — connecting lines from POSE_TEMPLATE.connections first, then draw points on top */}
                     {poses.map((pose) => {
                       const poseColor = pose.colorOverride || POSE_LINE_COLOR;
                       const pointColor = pose.colorOverride || POSE_POINT_COLOR;
@@ -3800,7 +3560,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                               ) : (
                                 <span
                                   onClick={(e) => { e.stopPropagation(); pushHistory(); setEditingPoseLabelId(pose.id); }}
-                                  title="คลิกเพื่อแก้ชื่อ label — คลิกขวาที่จุดใดก็ได้: ลบ pose นี้ทั้งชุด"
+                                  title="Click to edit the label — right-click any point: delete this whole pose"
                                   style={{ display: "inline-block", background: poseColor, color: "#fff", fontSize: 11, fontWeight: "bold", padding: "2px 6px", borderRadius: 4, whiteSpace: "nowrap", cursor: "pointer" }}
                                 >
                                   🦴 {pose.label}
@@ -3812,7 +3572,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                       );
                     })}
 
-                    {/* 🦴 V8: pose ที่กำลังวาดค้างอยู่ (ยังไม่ครบจุด) — เส้นประเชื่อมเท่าที่มีข้อมูล + preview จุดถัดไปตาม hover */}
+                    {/* 🦴 V8: a pose that's currently mid-drawing (not yet complete) — dashed connecting lines for what's placed so far + preview the next point on hover */}
                     {currentPoseKeypoints.length > 0 && (
                       <g>
                         {POSE_TEMPLATE.connections.map(([a, b], idx) => {
@@ -3836,7 +3596,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                       </g>
                     )}
 
-                    {/* 📍 V8: วาด Landmark ที่ปิดสมบูรณ์แล้วทั้งหมด — เส้นเชื่อมตาม template.connections ก่อน แล้วค่อยวาดจุดทับด้านบน */}
+                    {/* 📍 V8: draw all fully-closed Landmarks — connecting lines from template.connections first, then draw points on top */}
                     {landmarks.map((lm) => {
                       const template = LANDMARK_TEMPLATES[lm.templateType] || LANDMARK_TEMPLATES.face;
                       const lineColor = lm.colorOverride || LANDMARK_LINE_COLOR;
@@ -3894,7 +3654,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                               ) : (
                                 <span
                                   onClick={(e) => { e.stopPropagation(); pushHistory(); setEditingLandmarkLabelId(lm.id); }}
-                                  title="คลิกเพื่อแก้ชื่อ label — คลิกขวาที่จุดใดก็ได้: ลบ landmark นี้ทั้งชุด"
+                                  title="Click to edit the label — right-click any point: delete this whole landmark"
                                   style={{ display: "inline-block", background: lineColor, color: "#fff", fontSize: 11, fontWeight: "bold", padding: "2px 6px", borderRadius: 4, whiteSpace: "nowrap", cursor: "pointer" }}
                                 >
                                   📍 {lm.label}
@@ -3906,7 +3666,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                       );
                     })}
 
-                    {/* 📍 V8: landmark ที่กำลังวาดค้างอยู่ (ยังไม่ครบจุด) */}
+                    {/* 📍 V8: a landmark that's currently mid-drawing (not yet complete) */}
                     {currentLandmarkPoints.length > 0 && (
                       <g>
                         {LANDMARK_TEMPLATES[landmarkTemplateChoice].connections.map(([a, b], idx) => {
@@ -3932,7 +3692,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   </svg>
 
                   {boxes.map((box) => {
-                    const boxColor = box.colorOverride || getColorForLabel(box.label); // 🎨 V4/V6: สีที่เลือกเองมาก่อน ไม่งั้นใช้สีตาม label
+                    const boxColor = box.colorOverride || getColorForLabel(box.label); // 🎨 V4/V6: a manually chosen color takes priority, otherwise use the label-based color
                     return (
                     <div
                       key={box.id}
@@ -4024,7 +3784,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                               hoveredLabelRef.current = null;
                             }
                           }}
-                          title="คลิกเพื่อแก้ชื่อ label — Ctrl+ลาก: ย้ายเฉพาะป้าย — Ctrl+C คัดลอก / Ctrl+V วาง"
+                          title="Click to edit the label — Ctrl+drag: move just the label — Ctrl+C copy / Ctrl+V paste"
                           style={{ position: "absolute", top: -22 + (box.labelOffset?.y || 0), left: -2 + (box.labelOffset?.x || 0), background: boxColor, color: "#fff", fontSize: 11, padding: "2px 6px", borderRadius: "4px 4px 0 0", whiteSpace: "nowrap", cursor: "pointer", pointerEvents: "auto" }}
                         >
                           {box.label}
@@ -4049,10 +3809,10 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                     />
                   )}
 
-                  {/* 🔒 V3/V5: Blur regions ที่วาดไว้แล้ว — โชว์ preview เบลอจริงผ่าน CSS backdrop-filter
-                      สีของแต่ละกรอบใช้ค่าที่เลือกไว้ตอนวาด (region.color) เผื่อของเก่าที่วาดไว้ก่อน
-                      มี dropdown สี fallback เป็นม่วงเหมือนเดิม
-                      (ผลลัพธ์จริงตอนบันทึกจะเป็น pixelate ถาวรลงพิกเซล ไม่ใช่แค่ CSS filter นี้) */}
+                  {/* 🔒 V3/V5: already-drawn Blur regions — shows a realistic blur preview via CSS
+                      backdrop-filter; the color of each box uses the value chosen at drawing time
+                      (region.color), with older shapes falling back to purple as before.
+                      (the actual result on save is a permanent pixelation, not just this CSS filter) */}
                   {blurRegions.map((region) => {
                     const regionColor = region.color || DEFAULT_BLUR_COLOR;
                     return (
@@ -4085,7 +3845,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                     );
                   })}
 
-                  {/* 🔒 V3/V5: กรอบเบลอที่กำลังลากวาดอยู่ (preview ระหว่างลาก) ใช้สีที่เลือกไว้ใน dropdown ปัจจุบัน */}
+                  {/* 🔒 V3/V5: the blur box currently being drag-drawn (preview while dragging), using the color currently selected in the dropdown */}
                   {currentBlurBox && (
                     <div
                       style={{
@@ -4105,46 +3865,10 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                 </div>
               ) : (
                 <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#aaa" }}>
-                  ยังไม่มีรูปถ่าย (กรุณากดถ่ายภาพหรือคลิกอัปโหลดภาพจากฝั่งซ้ายก่อน)
+                  No image yet (please capture a photo or click to upload an image from the left first)
                 </div>
               )}
               </div>
-
-              {/* 🆕🏷️ รายการชื่อ label + จำนวนที่ทำ annotation ไว้แล้ว ลอยอยู่มุมขวาบนของรูปภาพ
-                  แสดงตามสถานะปัจจุบันของภาพที่กำลังดู/ขยายอยู่ (อัปเดตสดตามที่วาด/ลบ) */}
-              {capturedImage && annotationLabelCounts.length > 0 && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 10,
-                    right: 10,
-                    zIndex: 40,
-                    maxWidth: 200,
-                    maxHeight: CANVAS_HEIGHT - 20,
-                    overflowY: "auto",
-                    background: "rgba(15, 23, 42, 0.78)",
-                    color: "#fff",
-                    borderRadius: 10,
-                    padding: "8px 10px",
-                    fontSize: 11.5,
-                    pointerEvents: "none",
-                    backdropFilter: "blur(2px)"
-                  }}
-                >
-                  <div style={{ fontWeight: "bold", marginBottom: 4, fontSize: 11.5, opacity: 0.85 }}>
-                    🏷️ Label ({annotationCount})
-                  </div>
-                  {annotationLabelCounts.map((item) => (
-                    <div
-                      key={item.label}
-                      style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "1px 0" }}
-                    >
-                      <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.label}</span>
-                      <span style={{ fontWeight: "bold" }}>{item.count}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
 
               {capturedImage && zoomLevel > 1 && (
                 <div style={{ position: "absolute", top: 0, right: 4, width: 22, height: CANVAS_HEIGHT, pointerEvents: "none" }}>
@@ -4158,7 +3882,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                       const v = Number(e.target.value);
                       setPanOffset(prev => clampPanOffset({ ...prev, y: v }));
                     }}
-                    title="เลื่อนภาพขึ้น-ลง"
+                    title="Pan the image up-down"
                     style={{
                       position: "absolute",
                       top: "50%",
@@ -4189,7 +3913,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                     const v = Number(e.target.value);
                     setPanOffset(prev => clampPanOffset({ ...prev, x: -v }));
                   }}
-                  title="เลื่อนภาพซ้าย-ขวา"
+                  title="Pan the image left-right"
                   style={{ flex: 1, cursor: "pointer", accentColor: "#0078D7" }}
                 />
               </div>
@@ -4202,21 +3926,21 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   disabled={currentPolygonPoints.length < 3}
                   style={{ padding: "6px 14px", background: currentPolygonPoints.length < 3 ? "#ccc" : "#10B981", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: "bold", cursor: currentPolygonPoints.length < 3 ? "not-allowed" : "pointer" }}
                 >
-                  ✅ ปิดรูป Polygon ({currentPolygonPoints.length} จุด)
+                  ✅ Close Polygon shape ({currentPolygonPoints.length} points)
                 </button>
                 <button
                   onClick={undoLastPolygonPoint}
                   disabled={currentPolygonPoints.length === 0}
                   style={{ padding: "6px 14px", background: "#F3F4F6", color: "#444", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 13, cursor: currentPolygonPoints.length === 0 ? "not-allowed" : "pointer" }}
                 >
-                  ↩️ ยกเลิกจุดล่าสุด (กด r)
+                  ↩️ Undo last point (press r)
                 </button>
                 <button
                   onClick={cancelCurrentPolygon}
                   disabled={currentPolygonPoints.length === 0}
                   style={{ padding: "6px 14px", background: "#FEF2F2", color: "#EF4444", border: "1px solid #FCA5A5", borderRadius: 8, fontSize: 13, cursor: currentPolygonPoints.length === 0 ? "not-allowed" : "pointer" }}
                 >
-                  🗑️ ยกเลิก Polygon นี้ (Esc)
+                  🗑️ Cancel this Polygon (Esc)
                 </button>
               </div>
             )}
@@ -4227,19 +3951,19 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   onClick={finishPoseNow}
                   style={{ padding: "6px 14px", background: "#10B981", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: "bold", cursor: "pointer" }}
                 >
-                  ✅ ปิด Pose ตอนนี้เลย ({currentPoseKeypoints.length}/{POSE_TEMPLATE.names.length} จุด)
+                  ✅ Close this Pose now ({currentPoseKeypoints.length}/{POSE_TEMPLATE.names.length} points)
                 </button>
                 <button
                   onClick={undoLastPoseKeypoint}
                   style={{ padding: "6px 14px", background: "#F3F4F6", color: "#444", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 13, cursor: "pointer" }}
                 >
-                  ↩️ ยกเลิกจุดล่าสุด (กด r)
+                  ↩️ Undo last point (press r)
                 </button>
                 <button
                   onClick={cancelCurrentPose}
                   style={{ padding: "6px 14px", background: "#FEF2F2", color: "#EF4444", border: "1px solid #FCA5A5", borderRadius: 8, fontSize: 13, cursor: "pointer" }}
                 >
-                  🗑️ ยกเลิก Pose นี้ (Esc)
+                  🗑️ Cancel this Pose (Esc)
                 </button>
               </div>
             )}
@@ -4250,26 +3974,26 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   onClick={finishLandmarkNow}
                   style={{ padding: "6px 14px", background: "#10B981", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: "bold", cursor: "pointer" }}
                 >
-                  ✅ ปิด Landmark ตอนนี้เลย ({currentLandmarkPoints.length}/{LANDMARK_TEMPLATES[landmarkTemplateChoice].names.length} จุด)
+                  ✅ Close this Landmark now ({currentLandmarkPoints.length}/{LANDMARK_TEMPLATES[landmarkTemplateChoice].names.length} points)
                 </button>
                 <button
                   onClick={undoLastLandmarkPoint}
                   style={{ padding: "6px 14px", background: "#F3F4F6", color: "#444", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 13, cursor: "pointer" }}
                 >
-                  ↩️ ยกเลิกจุดล่าสุด (กด r)
+                  ↩️ Undo last point (press r)
                 </button>
                 <button
                   onClick={cancelCurrentLandmark}
                   style={{ padding: "6px 14px", background: "#FEF2F2", color: "#EF4444", border: "1px solid #FCA5A5", borderRadius: 8, fontSize: 13, cursor: "pointer" }}
                 >
-                  🗑️ ยกเลิก Landmark นี้ (Esc)
+                  🗑️ Cancel this Landmark (Esc)
                 </button>
               </div>
             )}
 
             {capturedImage && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, fontSize: 12, color: "#475569", flexWrap: "wrap" }}>
-                <span style={{ minWidth: 62 }}>🔍 ซูม: {Math.round(zoomLevel * 100)}%</span>
+                <span style={{ minWidth: 62 }}>🔍 Zoom: {Math.round(zoomLevel * 100)}%</span>
                 <button
                   onClick={() => setZoomLevel(z => {
                     const next = Math.max(MIN_ZOOM, Number((z - 0.25).toFixed(2)));
@@ -4296,7 +4020,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   onClick={() => { setZoomLevel(1); setPanOffset({ x: 0, y: 0 }); }}
                   disabled={zoomLevel === 1}
                   style={{ padding: "2px 10px", border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: zoomLevel === 1 ? "not-allowed" : "pointer", color: "#444", fontSize: 11 }}
-                >รีเซ็ต</button>
+                >Reset</button>
                 <button
                   onClick={() => setZoomLevel(z => {
                     const next = Math.min(MAX_ZOOM, Number((z + 0.25).toFixed(2)));
@@ -4306,27 +4030,16 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                   disabled={zoomLevel >= MAX_ZOOM}
                   style={{ width: 26, height: 26, flexShrink: 0, border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: zoomLevel >= MAX_ZOOM ? "not-allowed" : "pointer", color: "#444" }}
                 >+</button>
-
-                {/* 🆕 ย้ายปุ่ม 💾 บันทึกภาพ (สร้างครบ 12 แบบอัตโนมัติ) มาไว้ใต้ภาพที่ทำ annotation
-                    วางไว้ด้านขวา บรรทัดเดียวกับ 🔍 ซูม (ย้ายจากการ์ด "รายการ Annotation" ด้านล่างเดิม) */}
-                <button
-                  disabled={saveDisabled}
-                  style={{ marginLeft: "auto", padding: "8px 18px", background: saveDisabled ? "#ccc" : "#0078D7", color: "white", border: "none", borderRadius: 8, fontWeight: "bold", fontSize: 13, cursor: saveDisabled ? "not-allowed" : "pointer" }}
-                  onClick={saveAllModesToDataset}
-                  title={allModesSaved ? "ภาพนี้ถูกบันทึกครบทั้ง 12 แบบไปแล้ว กรุณาถ่าย/อัปโหลดภาพใหม่ก่อน" : ""}
-                >
-                  {allModesSaved ? "✅ บันทึกครบ 12 แบบแล้ว" : (isSubmitting ? "⌛ กำลังสร้างครบ 12 แบบ..." : "💾 บันทึกภาพ (สร้างครบ 12 แบบอัตโนมัติ)")}
-                </button>
                 </div>
             )}
 
-
+            
           </div>
 
           {capturedImage && (
             <div style={{ marginTop: 15, background: "#F8FAFC", padding: 12, borderRadius: 10, border: "1px solid #E2E8F0" }}>
               <div style={{ fontWeight: "bold", color: "#475569", fontSize: 14, marginBottom: 10 }}>
-                🖼️ แสดงภาพเสมือนที่บันทึก (คลิกที่ภาพเพื่อเลือกโหมด แล้วดูผลบน Canvas ด้านขวา)
+                🖼️ Preview of what will be saved (click an image to select a mode, then see the result on the Canvas to the right)
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(84px, 1fr))", gap: 8 }}>
                 {AUGMENTATION_MODES.map((m) => (
@@ -4400,29 +4113,37 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
       <div style={{ background: "#fff", padding: 20, borderRadius: 15, border: "1px solid #E5E7EB", boxShadow: "0 4px 12px rgba(0,0,0,.04)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 15 }}>
           <h3 style={{ margin: 0 }}>
-            📊 รายการ Annotation รูปภาพนี้ ({boxes.length} กล่อง, {polygons.length} polygon, {poses.length} pose, {landmarks.length} landmark, {blurRegions.length} blur)
+            📊 Annotations on this image ({boxes.length} box(es), {polygons.length} polygon(s), {poses.length} pose(s), {landmarks.length} landmark(s), {blurRegions.length} blur)
           </h3>
+          <button
+            disabled={saveDisabled}
+            style={{ padding: "10px 20px", background: saveDisabled ? "#ccc" : "#0078D7", color: "white", border: "none", borderRadius: 8, fontWeight: "bold", cursor: saveDisabled ? "not-allowed" : "pointer" }}
+            onClick={saveAllModesToDataset}
+            title={allModesSaved ? "This image has already been saved in all 12 variants. Please capture/upload a new image first." : ""}
+          >
+            {allModesSaved ? "✅ All 12 variants saved" : (isSubmitting ? "⌛ Generating all 12 variants..." : "💾 Save Image (auto-generates all 12 variants)")}
+          </button>
         </div>
 
         {blurRegions.length > 0 && (
           <p style={{ fontSize: 12, color: "#7C3AED", background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: 8, padding: "8px 12px", margin: "0 0 15px" }}>
-            🔒 มีพื้นที่เบลอ {blurRegions.length} จุดที่จะถูกเบลอถาวรลงพิกเซลจริงตอนกดบันทึก
+            🔒 There are {blurRegions.length} blur area(s) that will be permanently blurred to actual pixels when you save
           </p>
         )}
 
         {loadingGallery ? (
-          <p style={{ color: "#94A3B8", fontSize: 12.5, margin: "0 0 12px" }}>⏳ กำลังโหลดแกลเลอรี...</p>
+          <p style={{ color: "#94A3B8", fontSize: 12.5, margin: "0 0 12px" }}>⏳ Loading gallery...</p>
         ) : projectGallery.length > 0 ? (
           <div style={{ marginBottom: 15 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <span style={{ fontSize: 13, fontWeight: "bold", color: "#475569" }}>
-                🖼️ คลังภาพที่บันทึกแล้วในโปรเจกต์นี้ ({projectGallery.length} ล่าสุด)
+                🖼️ Saved image library for this project ({projectGallery.length} most recent)
               </span>
               <button
                 onClick={fetchProjectGallery}
                 style={{ background: "none", border: "none", color: "#0078D7", fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
               >
-                🔄 รีเฟรช
+                🔄 Refresh
               </button>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(70px, 1fr))", gap: 6, maxHeight: 220, overflowY: "auto" }}>
@@ -4457,7 +4178,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
         ) : null}
 
         {boxes.length === 0 && polygons.length === 0 && blurRegions.length === 0 && poses.length === 0 && landmarks.length === 0 ? (
-          <p style={{ color: "#aaa", textAlign: "center", padding: "10px 0" }}>ยังไม่มี Bounding Box, Polygon, Pose, Landmark หรือ Blur region ใด ๆ ถูกวาดในรูปปัจจุบันนี้</p>
+          <p style={{ color: "#aaa", textAlign: "center", padding: "10px 0" }}>No Bounding Box, Polygon, Pose, Landmark, or Blur region has been drawn on the current image yet</p>
         ) : (
           <>
             {boxes.length > 0 && (
@@ -4465,16 +4186,16 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                 <h4 style={{ fontSize: 14, color: "#666", margin: "0 0 10px" }}>🟧 Bounding Box ({boxes.length})</h4>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: (polygons.length > 0 || blurRegions.length > 0 || poses.length > 0 || landmarks.length > 0) ? 20 : 0 }}>
                   {boxes.map((box, index) => {
-                    const boxColor = box.colorOverride || getColorForLabel(box.label); // 🎨 V4/V6: สีที่เลือกเองมาก่อน (ตรงกับที่โชว์บน canvas)
+                    const boxColor = box.colorOverride || getColorForLabel(box.label); // 🎨 V4/V6: a manually chosen color takes priority (matches what's shown on the canvas)
                     return (
                     <div key={box.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f9fafb", border: "1px solid #e5e7eb", padding: "12px 15px", borderRadius: 8 }}>
                       <div>
                         <strong style={{ color: "#666", display: "inline-flex", alignItems: "center", gap: 6 }}>
                           <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: boxColor }} />
-                          กล่องที่ #{index + 1}
+                          Box #{index + 1}
                         </strong>
                         <div style={{ marginTop: 6, marginBottom: 6 }}>
-                          <span style={{ fontSize: 13, color: "#444" }}>คลาส:</span>
+                          <span style={{ fontSize: 13, color: "#444" }}>Class:</span>
                           <input
                             type="text"
                             list="class-suggestions"
@@ -4484,23 +4205,11 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                             style={{ marginLeft: 8, padding: "3px 8px", border: "1px solid #cbd5e1", borderRadius: 5, fontWeight: "bold", color: boxColor, width: "120px" }}
                           />
                         </div>
-                        <div style={{ marginBottom: 6 }}>
-                          <span style={{ fontSize: 13, color: "#444", display: "block", marginBottom: 3 }}>
-                            คำบรรยาย (ไม่บังคับ{trainTarget === "yolov8" ? " — ไม่จำเป็นสำหรับ YOLOv8 แต่เก็บไว้เผื่อเทรน Qwen2-VL/โมเดลอนาคต" : " — สำหรับ VLM"}):
-                          </span>
-                          <textarea
-                            value={box.description || ""}
-                            onChange={(e) => handleBoxDescriptionChange(box.id, e.target.value)}
-                            placeholder="เช่น หมวกกันน็อคสีแดง มีรอยขีดข่วนด้านหน้า"
-                            rows={2}
-                            style={{ padding: "4px 8px", border: "1px solid #cbd5e1", borderRadius: 5, fontSize: 12, width: "100%", maxWidth: 220, resize: "vertical", boxSizing: "border-box" }}
-                          />
-                        </div>
                         <div style={{ fontSize: 11, color: "#888" }}>
                           X: {Math.round(box.x)} | Y: {Math.round(box.y)} | W: {Math.round(box.w)} | H: {Math.round(box.h)}
                         </div>
                       </div>
-                      <button onClick={() => deleteBox(box.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="ลบกล่องนี้">❌</button>
+                      <button onClick={() => deleteBox(box.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="Delete this box">❌</button>
                     </div>
                     );
                   })}
@@ -4513,7 +4222,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                 <h4 style={{ fontSize: 14, color: "#666", margin: "0 0 10px" }}>⬡ Polygon ({polygons.length})</h4>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: (blurRegions.length > 0 || poses.length > 0 || landmarks.length > 0) ? 20 : 0 }}>
                   {polygons.map((poly, index) => {
-                    const polyColor = poly.colorOverride || getColorForLabel(poly.label); // 🎨 V4/V6: สีที่เลือกเองมาก่อน (ตรงกับที่โชว์บน canvas)
+                    const polyColor = poly.colorOverride || getColorForLabel(poly.label); // 🎨 V4/V6: a manually chosen color takes priority (matches what's shown on the canvas)
                     return (
                     <div key={poly.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f9fafb", border: "1px solid #e5e7eb", padding: "12px 15px", borderRadius: 8 }}>
                       <div>
@@ -4522,7 +4231,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                           Polygon #{index + 1}
                         </strong>
                         <div style={{ marginTop: 6, marginBottom: 6 }}>
-                          <span style={{ fontSize: 13, color: "#444" }}>คลาส:</span>
+                          <span style={{ fontSize: 13, color: "#444" }}>Class:</span>
                           <input
                             type="text"
                             list="class-suggestions"
@@ -4532,23 +4241,11 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                             style={{ marginLeft: 8, padding: "3px 8px", border: "1px solid #cbd5e1", borderRadius: 5, fontWeight: "bold", color: polyColor, width: "120px" }}
                           />
                         </div>
-                        <div style={{ marginBottom: 6 }}>
-                          <span style={{ fontSize: 13, color: "#444", display: "block", marginBottom: 3 }}>
-                            คำบรรยาย (ไม่บังคับ{trainTarget === "yolov8" ? " — ไม่จำเป็นสำหรับ YOLOv8 แต่เก็บไว้เผื่อเทรน Qwen2-VL/โมเดลอนาคต" : " — สำหรับ VLM"}):
-                          </span>
-                          <textarea
-                            value={poly.description || ""}
-                            onChange={(e) => handlePolygonDescriptionChange(poly.id, e.target.value)}
-                            placeholder="เช่น ฝากล่องสีเหลือง เปิดค้างอยู่ครึ่งหนึ่ง"
-                            rows={2}
-                            style={{ padding: "4px 8px", border: "1px solid #cbd5e1", borderRadius: 5, fontSize: 12, width: "100%", maxWidth: 220, resize: "vertical", boxSizing: "border-box" }}
-                          />
-                        </div>
                         <div style={{ fontSize: 11, color: "#888" }}>
-                          จำนวนจุด: {poly.points.length}
+                          Point count: {poly.points.length}
                         </div>
                       </div>
-                      <button onClick={() => deletePolygon(poly.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="ลบ Polygon นี้">❌</button>
+                      <button onClick={() => deletePolygon(poly.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="Delete this Polygon">❌</button>
                     </div>
                     );
                   })}
@@ -4571,7 +4268,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                             Pose #{index + 1}
                           </strong>
                           <div style={{ marginTop: 6, marginBottom: 6 }}>
-                            <span style={{ fontSize: 13, color: "#444" }}>คลาส:</span>
+                            <span style={{ fontSize: 13, color: "#444" }}>Class:</span>
                             <input
                               type="text"
                               value={pose.label}
@@ -4579,23 +4276,11 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                               style={{ marginLeft: 8, padding: "3px 8px", border: "1px solid #BAE6FD", borderRadius: 5, fontWeight: "bold", color: poseColor, width: "120px" }}
                             />
                           </div>
-                          <div style={{ marginBottom: 6 }}>
-                            <span style={{ fontSize: 13, color: "#444", display: "block", marginBottom: 3 }}>
-                              คำบรรยาย (ไม่บังคับ{trainTarget === "yolov8" ? " — ไม่จำเป็นสำหรับ YOLOv8 แต่เก็บไว้เผื่อเทรน Qwen2-VL/โมเดลอนาคต" : " — สำหรับ VLM"}):
-                            </span>
-                            <textarea
-                              value={pose.description || ""}
-                              onChange={(e) => handlePoseDescriptionChange(pose.id, e.target.value)}
-                              placeholder="เช่น กำลังนั่งยองก้มมองพื้น"
-                              rows={2}
-                              style={{ padding: "4px 8px", border: "1px solid #BAE6FD", borderRadius: 5, fontSize: 12, width: "100%", maxWidth: 220, resize: "vertical", boxSizing: "border-box" }}
-                            />
-                          </div>
                           <div style={{ fontSize: 11, color: "#888" }}>
-                            จุดที่มองเห็น: {visibleCount}/{POSE_TEMPLATE.names.length}
+                            Visible points: {visibleCount}/{POSE_TEMPLATE.names.length}
                           </div>
                         </div>
-                        <button onClick={() => deletePose(pose.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="ลบ Pose นี้">❌</button>
+                        <button onClick={() => deletePose(pose.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="Delete this Pose">❌</button>
                       </div>
                     );
                   })}
@@ -4618,7 +4303,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                             Landmark #{index + 1} ({template.label})
                           </strong>
                           <div style={{ marginTop: 6, marginBottom: 6 }}>
-                            <span style={{ fontSize: 13, color: "#444" }}>คลาส:</span>
+                            <span style={{ fontSize: 13, color: "#444" }}>Class:</span>
                             <input
                               type="text"
                               value={lm.label}
@@ -4626,23 +4311,11 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                               style={{ marginLeft: 8, padding: "3px 8px", border: "1px solid #DDD6FE", borderRadius: 5, fontWeight: "bold", color: lineColor, width: "120px" }}
                             />
                           </div>
-                          <div style={{ marginBottom: 6 }}>
-                            <span style={{ fontSize: 13, color: "#444", display: "block", marginBottom: 3 }}>
-                              คำบรรยาย (ไม่บังคับ{trainTarget === "yolov8" ? " — ไม่จำเป็นสำหรับ YOLOv8 แต่เก็บไว้เผื่อเทรน Qwen2-VL/โมเดลอนาคต" : " — สำหรับ VLM"}):
-                            </span>
-                            <textarea
-                              value={lm.description || ""}
-                              onChange={(e) => handleLandmarkDescriptionChange(lm.id, e.target.value)}
-                              placeholder="เช่น ใบหน้าหันเฉียงซ้าย ยิ้มเห็นฟัน"
-                              rows={2}
-                              style={{ padding: "4px 8px", border: "1px solid #DDD6FE", borderRadius: 5, fontSize: 12, width: "100%", maxWidth: 220, resize: "vertical", boxSizing: "border-box" }}
-                            />
-                          </div>
                           <div style={{ fontSize: 11, color: "#888" }}>
-                            จำนวนจุด: {lm.points.length}
+                            Point count: {lm.points.length}
                           </div>
                         </div>
-                        <button onClick={() => deleteLandmark(lm.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="ลบ Landmark นี้">❌</button>
+                        <button onClick={() => deleteLandmark(lm.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="Delete this Landmark">❌</button>
                       </div>
                     );
                   })}
@@ -4667,7 +4340,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
                           X: {Math.round(region.x)} | Y: {Math.round(region.y)} | W: {Math.round(region.w)} | H: {Math.round(region.h)}
                         </div>
                       </div>
-                      <button onClick={() => deleteBlurRegion(region.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="ลบพื้นที่เบลอนี้">❌</button>
+                      <button onClick={() => deleteBlurRegion(region.id)} style={{ background: "none", border: "none", color: "#EF4444", fontSize: 18, cursor: "pointer", padding: 5 }} title="Delete this blur area">❌</button>
                     </div>
                     );
                   })}
@@ -4681,7 +4354,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
     
          
 
-      {/* 📖 Popup คู่มือการสร้าง Annotation */}
+      {/* 📖 Annotation-guide popup */}
       {showAnnotationGuide && (
         <div
           onClick={() => setShowAnnotationGuide(false)}
@@ -4710,7 +4383,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h3 style={{ margin: 0, color: "#333" }}>📖 คู่มือการใช้เครื่องมือสร้าง Annotation</h3>
+              <h3 style={{ margin: 0, color: "#333" }}>📖 Annotation tool usage guide</h3>
               <button
                 onClick={() => setShowAnnotationGuide(false)}
                 style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#94A3B8", lineHeight: 1 }}
@@ -4733,7 +4406,7 @@ const willExceedOnSave = remainingImages !== null && remainingImages < SAVE_MULT
             ))}
 
             <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid #E5E7EB" }}>
-              <h4 style={{ margin: "0 0 8px", fontSize: 14, color: "#333" }}>⌨️ คีย์ลัดทั่วไป</h4>
+              <h4 style={{ margin: "0 0 8px", fontSize: 14, color: "#333" }}>⌨️ General shortcuts</h4>
               <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: "#555", lineHeight: 1.7 }}>
                 {GENERAL_SHORTCUTS.map((item, i) => (
                   <li key={i}>{item}</li>
