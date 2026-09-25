@@ -6,8 +6,8 @@ import Projects from "./page/Projects";
 import CameraView from "./page/CameraView";
 
 import TestModel from "./page/TestModel";
-
-import Register from "./page/Register";
+import Register from "./page/register";
+//mport Register from "./page/Register";
 
 
 import NewProject from "./page/Newproject";
@@ -22,7 +22,8 @@ import Single from "./page/Single";
 
 import Burst from "./page/Burst";
 import AIGenerator from "./page/AIGenerator";
-import aftertraining from "./page/Aftertraining";
+import Aftertraining from "./page/aftertraining";
+//import aftertraining from "./page/Aftertraining";
 import DetectionCapture from "./page/DetectionCapture";
 import MobileCameraCapture from "./page/MobileCameraCapture";
 
@@ -251,7 +252,7 @@ function App() {
 
 <Route
   path="/Aftertraining"
-  element={<aftertraining />}
+  element={<Aftertraining />}
 />
 
 <Route path="/detection-capture" element={<DetectionCapture />} />
